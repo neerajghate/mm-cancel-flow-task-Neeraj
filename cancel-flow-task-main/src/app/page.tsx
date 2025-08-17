@@ -1,14 +1,31 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-// Mock user data for UI display
+// Toggle while testing A/B: force showing downsell on "Not yet"
+const FORCE_DOWNSELL = false;
+
+/* ---------------- Right-path components ---------------- */
+import CancelModal from '../components/CancelModal';
+import DownsellStep from '../components/DownsellStep';
+import SuggestedRolesStep from '../components/SuggestedRolesStep';
+import ReasonStep from '../components/ReasonStep';
+import FinalReasonStep from '../components/FinalReasonStep';
+import CancelCompleteStep from '../components/CancelCompleteStep';
+
+/* ---------------- Left-path components ---------------- */
+import FoundJobIntroStep from '../components/FoundJobIntroStep';
+import FoundJobFeedbackStep from '../components/FoundJobFeedbackStep';
+import FoundJobVisaYesStep from '../components/FoundJobVisaYesStep';
+import FoundJobVisaNoStep from '../components/FoundJobVisaNoStep';
+import FoundJobCompleteStep from '../components/FoundJobCompleteStep';
+
+/* ---------------- Mock data ---------------- */
 const mockUser = {
   email: 'user@example.com',
   id: '1'
 };
 
-// Mock subscription data for UI display
 const mockSubscriptionData = {
   status: 'active',
   isTrialSubscription: false,
@@ -21,16 +38,67 @@ const mockSubscriptionData = {
   downsellAccepted: false
 };
 
+type ModalStage =
+  | 'initial'
+  | 'downsell'
+  | 'roles'
+  | 'reason'
+  | 'finalReason'
+  | 'done'
+  // left path
+  | 'foundJob1'
+  | 'foundJob2'
+  | 'foundJob3'
+  | 'foundJobDone';
+
+type ABBucket = 'A' | 'B'; // A = sees downsell, B = skips downsell
+
+type FoundJobData = {
+  foundWithMate: '' | 'Yes' | 'No';
+  appsApplied?: string;
+  companiesEmailed?: string;
+  companiesInterviewed?: string;
+  feedback?: string;
+  hasCompanyLawyer?: boolean;
+};
+
 export default function ProfilePage() {
   const [loading] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
-  
-  // New state for settings toggle
+
+  // Settings accordion
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
+
+  // Cancel-flow modal router state
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [modalStage, setModalStage] = useState<ModalStage>('initial');
+  const [abBucket, setAbBucket] = useState<ABBucket>('A');
+  const [sawDownsellThisSession, setSawDownsellThisSession] = useState(false);
+
+  // Left-path collected data
+  const [foundJobData, setFoundJobData] = useState<FoundJobData>({
+    foundWithMate: ''
+  });
+
+  useEffect(() => {
+    // Persist A/B bucket so users don't flip each click
+    try {
+      const key = 'mm_cancel_ab';
+      const saved = typeof window !== 'undefined' ? window.localStorage.getItem(key) : null;
+      if (saved === 'A' || saved === 'B') {
+        setAbBucket(saved as ABBucket);
+      } else {
+        const bucket: ABBucket = Math.random() < 0.5 ? 'A' : 'B';
+        window.localStorage.setItem(key, bucket);
+        setAbBucket(bucket);
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }, []);
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
-    // Simulate sign out delay
     setTimeout(() => {
       console.log('User signed out');
       setIsSigningOut(false);
@@ -41,12 +109,28 @@ export default function ProfilePage() {
     console.log('Navigate to jobs');
   };
 
+  /* ---------------- Clicks from CancelModal ---------------- */
+  // LEFT PATH: user clicked "Yes, I’ve found a job"
+  const handleFoundJob = () => {
+    setFoundJobData({ foundWithMate: '' });
+    setModalStage('foundJob1');
+  };
+
+  // RIGHT PATH: user clicked "Not yet"
+  const handleStillLooking = () => {
+    if (FORCE_DOWNSELL || abBucket === 'A') {
+      setSawDownsellThisSession(true);
+      setModalStage('downsell'); // show downsell
+    } else {
+      setModalStage('reason'); // skip downsell
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white shadow rounded-lg overflow-hidden">
-            {/* Header skeleton */}
             <div className="px-6 py-8 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-indigo-50">
               <div className="flex items-center justify-between">
                 <div className="h-8 w-40 bg-gradient-to-r from-gray-200 to-gray-300 rounded animate-pulse"></div>
@@ -56,8 +140,6 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
-            
-            {/* Profile Info skeleton */}
             <div className="px-6 py-6 border-b border-gray-200">
               <div className="h-6 w-56 bg-gradient-to-r from-gray-200 to-gray-300 rounded mb-4 animate-pulse"></div>
               <div className="space-y-6">
@@ -75,14 +157,10 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
-            
-            {/* Support skeleton */}
             <div className="px-6 py-6 border-b border-gray-200">
               <div className="h-6 w-24 bg-gradient-to-r from-gray-200 to-gray-300 rounded mb-4 animate-pulse"></div>
               <div className="h-12 w-full bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg animate-pulse"></div>
             </div>
-            
-            {/* Subscription Management skeleton */}
             <div className="px-6 py-6">
               <div className="h-6 w-56 bg-gradient-to-r from-gray-200 to-gray-300 rounded mb-4 animate-pulse"></div>
               <div className="space-y-4">
@@ -130,8 +208,8 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-          
-          {/* Profile Info */}
+
+          {/* Account info */}
           <div className="px-6 py-6 border-b border-gray-200">
             <h2 className="text-lg font-medium text-gray-900 mb-4">Account Information</h2>
             <div className="space-y-3">
@@ -169,18 +247,19 @@ export default function ProfilePage() {
                       <p className="text-sm font-medium text-gray-900">Next payment</p>
                     </div>
                     <p className="text-sm font-medium text-gray-900">
-                      {mockSubscriptionData.currentPeriodEnd && new Date(mockSubscriptionData.currentPeriodEnd).toLocaleDateString('en-US', {
-                        month: 'long',
-                        day: 'numeric'
-                      })}
+                      {mockSubscriptionData.currentPeriodEnd &&
+                        new Date(mockSubscriptionData.currentPeriodEnd).toLocaleDateString('en-US', {
+                          month: 'long',
+                          day: 'numeric'
+                        })}
                     </p>
                   </div>
                 )}
               </div>
             </div>
           </div>
-          
-          {/* Support Button */}
+
+          {/* Support */}
           <div className="px-6 py-6 border-b border-gray-200">
             <button
               onClick={() => {
@@ -196,7 +275,7 @@ export default function ProfilePage() {
             </button>
           </div>
 
-          {/* Settings Toggle Button */}
+          {/* Settings */}
           <div className="px-6 py-6">
             <button
               onClick={() => {
@@ -210,10 +289,10 @@ export default function ProfilePage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
               <span className="text-sm font-medium">Manage Subscription</span>
-              <svg 
+              <svg
                 className={`w-4 h-4 ml-2 transition-transform duration-200 ${showAdvancedSettings ? 'rotate-180' : ''}`}
-                fill="none" 
-                viewBox="0 0 24 24" 
+                fill="none"
+                viewBox="0 0 24 24"
                 stroke="currentColor"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -249,7 +328,12 @@ export default function ProfilePage() {
                     </button>
                     <button
                       onClick={() => {
-                        console.log('Cancel button clicked - no action');
+                        // Open cancel flow modal
+                        setShowCancelModal(true);
+                        setModalStage('initial');
+                        setSawDownsellThisSession(false);
+                        setFoundJobData({ foundWithMate: '' });
+                        console.log('Cancel flow opened');
                       }}
                       className="inline-flex items-center justify-center w-full px-4 py-3 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 hover:border-red-300 transition-all duration-200 shadow-sm group"
                     >
@@ -263,8 +347,164 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
+          {/* end settings section */}
         </div>
       </div>
+
+      {/* Modal overlay router */}
+      {showCancelModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center">
+          {/* Backdrop */}
+          <button aria-hidden="true" onClick={() => setShowCancelModal(false)} className="absolute inset-0 bg-black/50" />
+
+          {/* Close button floating top-right of overlay */}
+          <button
+            onClick={() => setShowCancelModal(false)}
+            aria-label="Close"
+            className="absolute right-6 top-6 z-[110] rounded-full p-2 text-gray-500 hover:bg-white/70 hover:text-gray-700"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Stage switcher */}
+          {modalStage === 'initial' && (
+            <CancelModal
+              open
+              embedded
+              onClose={() => setShowCancelModal(false)}
+              onFoundJob={handleFoundJob}
+              onStillLooking={handleStillLooking}
+            />
+          )}
+
+          {/* ---------- LEFT PATH (Found a job) ---------- */}
+          {modalStage === 'foundJob1' && (
+            <FoundJobIntroStep
+              onBack={() => setModalStage('initial')}
+              onNext={(payload) => {
+                setFoundJobData((prev) => ({
+                  ...prev,
+                  foundWithMate: payload.foundWithMate,
+                  appsApplied: payload.appsApplied,
+                  companiesEmailed: payload.companiesEmailed,
+                  companiesInterviewed: payload.companiesInterviewed
+                }));
+                setModalStage('foundJob2');
+              }}
+            />
+          )}
+
+          {modalStage === 'foundJob2' && (
+            <FoundJobFeedbackStep
+              onBack={() => setModalStage('foundJob1')}
+              onNext={(payload) => {
+                setFoundJobData((prev) => ({ ...prev, feedback: payload.feedback }));
+                setModalStage('foundJob3');
+              }}
+            />
+          )}
+
+          {modalStage === 'foundJob3' &&
+            (foundJobData.foundWithMate === 'Yes' ? (
+              <FoundJobVisaYesStep
+                onBack={() => setModalStage('foundJob2')}
+                onComplete={(payload) => {
+                  setFoundJobData((prev) => ({ ...prev, hasCompanyLawyer: payload.hasCompanyLawyer }));
+                  setModalStage('foundJobDone'); // left-path completion
+                }}
+              />
+            ) : (
+              <FoundJobVisaNoStep
+                onBack={() => setModalStage('foundJob2')}
+                onComplete={(payload) => {
+                  setFoundJobData((prev) => ({ ...prev, hasCompanyLawyer: payload.hasCompanyLawyer }));
+                  setModalStage('foundJobDone'); // left-path completion
+                }}
+              />
+            ))}
+
+          {modalStage === 'foundJobDone' && (
+            <FoundJobCompleteStep
+              hasCompanyLawyer={!!foundJobData.hasCompanyLawyer}
+              onFinish={() => {
+                setShowCancelModal(false);
+                console.log('Finish clicked');
+              }}
+              onClose={() => setShowCancelModal(false)}
+            />
+          )}
+
+          {/* ---------- RIGHT PATH (Still looking) ---------- */}
+          {modalStage === 'downsell' && (
+            <DownsellStep
+              onBack={() => {
+                setModalStage('initial');
+              }}
+              onAccept={() => {
+                // Accept offer → roles, then close on continue
+                setModalStage('roles');
+              }}
+              onDecline={() => {
+                // Declined → go to survey (ReasonStep)
+                setModalStage('reason');
+              }}
+            />
+          )}
+
+          {modalStage === 'roles' && (
+            <SuggestedRolesStep
+              onBack={() => setModalStage('downsell')}
+              onContinue={() => {
+                // Terminal screen for the "accept offer" path
+                setShowCancelModal(false);
+              }}
+            />
+          )}
+
+          {modalStage === 'reason' && (
+            <ReasonStep
+              onBack={() => {
+                setModalStage(sawDownsellThisSession ? 'downsell' : 'initial');
+              }}
+              onNext={() => {
+                setModalStage('finalReason'); // single modal with internal states
+              }}
+            />
+          )}
+
+          {modalStage === 'finalReason' && (
+            <FinalReasonStep
+              onBack={() => setModalStage('reason')}
+              onComplete={(payload) => {
+                console.log('Final cancel payload (right path):', payload);
+                setModalStage('done');
+              }}
+            />
+          )}
+
+          {modalStage === 'done' && (
+            <CancelCompleteStep
+              onBack={() => setModalStage('initial')}
+              onJobs={() => {
+                setShowCancelModal(false);
+                console.log('Back to jobs');
+              }}
+              onClose={() => setShowCancelModal(false)}
+              endDate={
+                mockSubscriptionData.currentPeriodEnd
+                  ? new Date(mockSubscriptionData.currentPeriodEnd).toLocaleDateString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric'
+                    })
+                  : 'XX date'
+              }
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }
