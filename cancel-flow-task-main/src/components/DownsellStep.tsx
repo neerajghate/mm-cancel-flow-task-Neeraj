@@ -5,13 +5,17 @@ type DownsellStepProps = {
   onBack: () => void;
   onAccept: () => void;
   onDecline: () => void;
+  onClose?: () => void;                // ← add this
   imageUrl?: string;
 };
+
+const GREEN = '#34c759';
 
 export default function DownsellStep({
   onBack,
   onAccept,
   onDecline,
+  onClose,                              // ← receive it
   imageUrl = '/nyc.jpg'
 }: DownsellStepProps) {
   return (
@@ -24,11 +28,12 @@ export default function DownsellStep({
       role="dialog"
       aria-modal="true"
     >
-      {/* Header (Back | Title | Stepper) */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+      {/* Header (Back | centered title+progress | Close) */}
+      <div className="relative px-6 py-4 border-b border-gray-100 flex items-center justify-center">
+        {/* Back (absolute left) */}
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-2 text-xs sm:text-sm text-gray-700 hover:text-gray-900"
+          className="absolute left-4 top-3.5 inline-flex items-center gap-2 text-xs sm:text-sm text-gray-700 hover:text-gray-900"
         >
           <svg className="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -36,21 +41,32 @@ export default function DownsellStep({
           Back
         </button>
 
-        <div className="text-xs sm:text-sm font-semibold text-gray-900 text-center">
-          Subscription Cancellation
-        </div>
-
-        <div className="flex items-center gap-2 sm:gap-3 text-[11px] sm:text-sm text-gray-600">
+        {/* Center: title + progress */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="text-xs sm:text-sm font-semibold text-gray-900">Subscription Cancellation</div>
           <div className="flex items-center gap-1">
             <span className="h-2 w-5 sm:h-2.5 sm:w-6 rounded-full bg-gray-800" />
             <span className="h-2 w-5 sm:h-2.5 sm:w-6 rounded-full bg-gray-300" />
             <span className="h-2 w-5 sm:h-2.5 sm:w-6 rounded-full bg-gray-300" />
           </div>
-          <span>Step 1 of 3</span>
+          <span className="text-[11px] sm:text-xs text-gray-600">Step 1 of 3</span>
         </div>
+
+        {/* Close (absolute right) */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="absolute right-4 top-3.5 rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
 
-      {/* Body (smaller typography + slightly tighter spacing) */}
+      {/* Body */}
       <div className="grid grid-cols-1 gap-6 sm:gap-8 px-6 sm:px-8 py-6 sm:py-8 sm:grid-cols-2">
         {/* Left: copy + offer */}
         <div className="sm:pr-6">
@@ -63,7 +79,6 @@ export default function DownsellStep({
             We’ve been there and we’re here to help you.
           </p>
 
-          {/* Offer card (reduced scale) */}
           <div className="mt-5 rounded-2xl border border-violet-200 bg-violet-50 p-4 sm:p-5 shadow-sm">
             <p className="text-lg sm:text-xl text-gray-900">
               Here’s <span className="font-bold">50% off</span> until you find a job.
@@ -87,7 +102,6 @@ export default function DownsellStep({
             </p>
           </div>
 
-          {/* Decline */}
           <button
             onClick={onDecline}
             className="mt-5 w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-medium text-gray-800 hover:bg-gray-50"

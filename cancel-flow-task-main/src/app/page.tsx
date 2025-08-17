@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 
 // Toggle while testing A/B: force showing downsell on "Not yet"
-const FORCE_DOWNSELL = false;
+const FORCE_DOWNSELL = true;
 
 /* ---------------- Right-path components ---------------- */
 import CancelModal from '../components/CancelModal';
@@ -393,6 +393,7 @@ export default function ProfilePage() {
                 }));
                 setModalStage('foundJob2');
               }}
+              onClose={() => setShowCancelModal(false)} 
             />
           )}
 
@@ -403,6 +404,7 @@ export default function ProfilePage() {
                 setFoundJobData((prev) => ({ ...prev, feedback: payload.feedback }));
                 setModalStage('foundJob3');
               }}
+              onClose={() => setShowCancelModal(false)} 
             />
           )}
 
@@ -413,7 +415,9 @@ export default function ProfilePage() {
                 onComplete={(payload) => {
                   setFoundJobData((prev) => ({ ...prev, hasCompanyLawyer: payload.hasCompanyLawyer }));
                   setModalStage('foundJobDone'); // left-path completion
+                  
                 }}
+                onClose={() => setShowCancelModal(false)} 
               />
             ) : (
               <FoundJobVisaNoStep
@@ -422,6 +426,7 @@ export default function ProfilePage() {
                   setFoundJobData((prev) => ({ ...prev, hasCompanyLawyer: payload.hasCompanyLawyer }));
                   setModalStage('foundJobDone'); // left-path completion
                 }}
+                onClose={() => setShowCancelModal(false)} 
               />
             ))}
 
@@ -450,6 +455,7 @@ export default function ProfilePage() {
                 // Declined → go to survey (ReasonStep)
                 setModalStage('reason');
               }}
+              onClose={() => setShowCancelModal(false)}
             />
           )}
 
@@ -460,6 +466,7 @@ export default function ProfilePage() {
                 // Terminal screen for the "accept offer" path
                 setShowCancelModal(false);
               }}
+              onClose={() => setShowCancelModal(false)}
             />
           )}
 
@@ -471,6 +478,7 @@ export default function ProfilePage() {
               onNext={() => {
                 setModalStage('finalReason'); // single modal with internal states
               }}
+              onClose={() => setShowCancelModal(false)}
             />
           )}
 
@@ -481,6 +489,7 @@ export default function ProfilePage() {
                 console.log('Final cancel payload (right path):', payload);
                 setModalStage('done');
               }}
+              onClose={() => setShowCancelModal(false)}
             />
           )}
 

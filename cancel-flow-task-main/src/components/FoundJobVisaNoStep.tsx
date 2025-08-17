@@ -45,6 +45,7 @@ export default function FoundJobVisaNoStep({
     >
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        {/* Back (left) */}
         <button
           onClick={onBack}
           className="inline-flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900"
@@ -55,18 +56,27 @@ export default function FoundJobVisaNoStep({
           Back
         </button>
 
-        <div className="text-sm font-semibold text-gray-900">
-          Subscription Cancellation
-        </div>
+        {/* Center: title + progress + step text */}
+        <div className="flex items-center gap-3">
+          <div className="text-sm font-semibold text-gray-900">Subscription Cancellation</div>
 
-        <div className="flex items-center gap-3 text-sm text-gray-600">
+          {/* Step 1: progress pills should be grey */}
           <div className="flex items-center gap-1">
             <span className="h-2.5 w-6 rounded-full" style={{ backgroundColor: GREEN }} />
             <span className="h-2.5 w-6 rounded-full" style={{ backgroundColor: GREEN }} />
-            <span className="h-2.5 w-6 rounded-full" style={{ backgroundColor: GREEN }} />
+            <span className="h-2.5 w-6 rounded-full bg-gray-400" />
           </div>
-          <span>Step 3 of 3</span>
+
+          <span className="text-sm text-gray-600">Step 3 of 3</span>
         </div>
+
+        {/* Close (extreme right) */}
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          className="rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+        >
+        </button>
       </div>
 
       {/* Body */}

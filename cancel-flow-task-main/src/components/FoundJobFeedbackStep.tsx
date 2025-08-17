@@ -34,6 +34,7 @@ export default function FoundJobFeedbackStep({
     >
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        {/* Back (left) */}
         <button
           onClick={onBack}
           className="inline-flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900"
@@ -44,18 +45,30 @@ export default function FoundJobFeedbackStep({
           Back
         </button>
 
-        <div className="text-sm font-semibold text-gray-900">
-          Subscription Cancellation
-        </div>
+        {/* Center: title + progress + step text */}
+        <div className="flex items-center gap-3">
+          <div className="text-sm font-semibold text-gray-900">Subscription Cancellation</div>
 
-        <div className="flex items-center gap-3 text-sm text-gray-600">
+          {/* Step 1: progress pills should be grey */}
           <div className="flex items-center gap-1">
             <span className="h-2.5 w-6 rounded-full" style={{ backgroundColor: GREEN }} />
-            <span className="h-2.5 w-6 rounded-full" style={{ backgroundColor: GREEN }} />
+            <span className="h-2.5 w-6 rounded-full bg-gray-400" />
             <span className="h-2.5 w-6 rounded-full bg-gray-300" />
           </div>
-          <span>Step 2 of 3</span>
+
+          <span className="text-sm text-gray-600">Step 2 of 3</span>
         </div>
+
+        {/* Close (extreme right) */}
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          className="rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+        >
+          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
 
       {/* Body */}
@@ -125,9 +138,6 @@ export default function FoundJobFeedbackStep({
           aria-label="Close"
           className="absolute right-4 top-3.5 rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
         >
-          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
         </button>
       )}
     </div>
