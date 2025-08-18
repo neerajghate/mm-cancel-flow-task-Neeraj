@@ -1,0 +1,276 @@
+@layer components {
+	/* Buttons */
+	.btn {
+		@apply inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+	}
+	.btn--primary { @apply bg-[#8952fc] text-white hover:bg-[#7b40fc] focus:ring-[#8952fc] shadow-sm; }
+	.btn--secondary { @apply bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-gray-400 focus:ring-gray-300 shadow-sm; }
+	.btn--outline { @apply bg-transparent text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 focus:ring-gray-200; }
+	.btn--ghost { @apply bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-200; }
+	.btn--danger { @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm; }
+	.btn--success { @apply bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 shadow-sm; }
+	.btn--pill { @apply rounded-xl border border-gray-200 bg-white text-gray-800 shadow-sm hover:border-gray-300 hover:bg-gray-50 focus:ring-2 focus:ring-indigo-200; }
+
+	.btn--sm { @apply px-3 py-1.5 text-sm; }
+	.btn--md { @apply px-4 py-2 text-sm; }
+	.btn--lg { @apply px-6 py-3 text-sm; }
+	.btn--xl { @apply px-8 py-4 text-base; }
+	.btn--full { @apply w-full; }
+
+	.btn__spinner { @apply animate-spin -ml-1 mr-2 h-4 w-4; }
+
+	/* Modal */
+	.modal-overlay { @apply fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4; }
+	.modal-backdrop { @apply absolute inset-0 bg-black/50; }
+	.modal { @apply relative bg-white rounded-2xl shadow-2xl; }
+	.modal--sm { @apply max-w-md; }
+	.modal--md { @apply max-w-lg; }
+	.modal--lg { @apply max-w-2xl; }
+	.modal--xl { @apply max-w-4xl; }
+	.modal--full { @apply max-w-full mx-2 sm:mx-4; }
+
+	.modal-header { @apply flex items-center justify-between px-3 sm:px-4 py-3 border-b border-gray-100; }
+	.modal-body { @apply px-3 sm:px-6 py-4 sm:py-6; }
+	.modal-footer { @apply px-3 sm:px-4 py-3 border-t border-gray-100 flex items-center justify-end gap-3; }
+
+	.icon-button { @apply rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors; }
+	.modal-close-button { @apply absolute right-3 sm:right-4 top-3 sm:top-4 z-[110] rounded-full p-2 text-gray-500 hover:bg-white/70 hover:text-gray-700; }
+
+	/* Card */
+	.card { @apply bg-white; }
+	.card-header { @apply pb-4; }
+	.card-header--border { @apply border-b border-gray-200; }
+	.card-body { @apply py-4; }
+	.card-footer { @apply pt-4; }
+	.card-footer--border { @apply border-t border-gray-200; }
+
+	/* Info Card */
+	.info-card { @apply flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200; }
+	.badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium border; }
+	.badge--success { @apply bg-green-50 text-green-700 border-green-200; }
+	.badge--warning { @apply bg-yellow-50 text-yellow-700 border-yellow-200; }
+	.badge--error { @apply bg-red-50 text-red-700 border-red-200; }
+	.badge--info { @apply bg-blue-50 text-blue-700 border-blue-200; }
+
+	/* Form */
+	.form-field { @apply space-y-2; }
+	.form-label { @apply text-sm text-gray-700; }
+	.form-required { @apply text-red-500 ml-1; }
+	.form-error { @apply text-xs text-red-600; }
+	.form-helper { @apply text-xs text-gray-500; }
+	.input { @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7c5cff] focus:border-transparent; }
+	.textarea { @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7c5cff] focus:border-transparent resize-none; }
+	.pill { @apply h-10 rounded-xl text-sm border shadow-sm transition-all duration-200; }
+	.pill--active { @apply text-white bg-[#7c5cff] border-[#7c5cff]; }
+	.pill--inactive { @apply text-gray-700 bg-gray-100 border-gray-200 hover:bg-gray-200; }
+
+	/* Progress */
+	.progress { @apply flex items-center gap-3; }
+	.progress-pills { @apply flex items-center gap-1; }
+	.progress-pill { @apply h-2.5 w-6 rounded-full transition-colors duration-200; }
+	.progress-pill--active { @apply bg-gray-400; }
+	.progress-pill--inactive { @apply bg-gray-300; }
+	.progress-text { @apply text-sm text-gray-600; }
+	/* Progress Indicator Pills (Added) */
+	.progress-pill--step { @apply w-6 h-2 bg-green-500 rounded-full; }
+	.progress-pill--step--inactive { @apply w-6 h-2 bg-gray-300 rounded-full; }
+
+	.step-progress { @apply space-y-4; }
+	.step { @apply flex items-center space-x-3; }
+	.step-indicator { @apply flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium border-2; }
+	.step-indicator--completed { @apply bg-green-500 border-green-500 text-white; }
+	.step-indicator--current { @apply bg-blue-500 border-blue-500 text-white; }
+	.step-indicator--pending { @apply bg-gray-200 border-gray-300 text-gray-500; }
+	.step-title { @apply text-sm font-medium; }
+	.step-title--completed { @apply text-green-600; }
+	.step-title--current { @apply text-blue-600; }
+	.step-title--pending { @apply text-gray-500; }
+	.step-description { @apply text-xs text-gray-400 mt-1; }
+
+	/* Page-specific helpers */
+	.page-container { @apply min-h-screen bg-gray-50 py-12 relative; }
+	.page-header { @apply px-6 py-8 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-indigo-50; }
+
+	/* Layout Components */
+	.modal-panel { @apply relative w-full max-w-4xl rounded-2xl bg-white shadow-2xl; }
+	.modal-panel--large { @apply max-w-4xl; }
+	.modal-panel--medium { @apply max-w-2xl; }
+	
+	.content-grid { @apply grid grid-cols-1 gap-4 sm:gap-6; }
+	.content-grid--compact { @apply gap-3 sm:gap-4; }
+	
+	/* Mobile-first responsive grid */
+	@media (min-width: 640px) {
+		.content-grid { @apply grid-cols-2; }
+	}
+	
+	.image-container { @apply overflow-hidden rounded-2xl hidden sm:block; }
+	.image-container--small { @apply rounded-xl; }
+	
+	/* Typography */
+	.heading-1 { @apply text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 leading-tight; }
+	.heading-2 { @apply text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 leading-tight; }
+	.heading-3 { @apply text-base sm:text-lg lg:text-xl font-semibold text-gray-900 leading-tight; }
+	.heading-4 { @apply text-sm sm:text-base lg:text-lg font-semibold text-gray-900 leading-tight; }
+	
+	.text-body { @apply text-sm text-gray-700 leading-relaxed; }
+	.text-muted { @apply text-sm text-gray-500 leading-relaxed; }
+	.text-muted--large { @apply text-sm sm:text-base text-gray-500 leading-relaxed; }
+	.text-body--large { @apply text-lg font-medium; }
+	.section-title { @apply text-sm font-semibold text-gray-900; }
+	.step-text { @apply text-sm text-gray-600; }
+	.job-title { @apply text-base font-semibold text-gray-900; }
+	.job-meta { @apply text-sm text-gray-500; }
+	.job-salary { @apply text-gray-800 font-medium; }
+	.job-description { @apply mt-4 text-sm leading-6 text-gray-700; }
+	.job-actions { @apply mt-5 flex items-center justify-end gap-3; }
+	
+	.text-error { @apply text-xs text-red-600; }
+	.text-success { @apply text-sm text-green-600; }
+	
+	/* Interactive Elements */
+	.back-link { @apply inline-flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900; }
+	.back-link--small { @apply text-xs sm:text-sm; }
+	.back-link--absolute { @apply absolute left-4 top-3.5; }
+	
+	.checkbox-group { @apply space-y-3; }
+	.checkbox-item { @apply flex items-center gap-3 cursor-pointer; }
+	.checkbox-input { @apply h-4 w-4 text-gray-900; }
+	.checkbox-label { @apply text-gray-800; }
+	
+	/* Radio Button Styles */
+	.radio-group { @apply space-y-3; }
+	.radio-item { @apply flex items-center gap-3 cursor-pointer; }
+	.radio-input { @apply w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500; }
+	.radio-label { @apply text-lg; }
+	
+	/* Button Variants */
+	.btn--gray { @apply bg-gray-300 hover:bg-gray-400 text-gray-700 border-0; }
+	
+	/* Special Components */
+	.downsell-offer { @apply mt-5 rounded-2xl border border-violet-200 bg-violet-50 p-4 sm:p-5 shadow-sm; }
+	.downsell-price { @apply mt-2 flex items-baseline gap-2 sm:gap-3; }
+	.downsell-price--current { @apply text-lg sm:text-xl font-semibold text-violet-700; }
+	.downsell-price--unit { @apply text-xs sm:text-sm text-violet-700; }
+	.downsell-price--original { @apply text-xs sm:text-sm text-gray-400 line-through; }
+	
+	.contact-card { @apply mt-5 rounded-xl border border-gray-200 bg-gray-50 p-4; }
+	.contact-info { @apply flex items-center gap-3; }
+	.contact-avatar { @apply rounded-full; }
+	.contact-details { @apply text-sm leading-tight; }
+	.contact-name { @apply font-semibold text-gray-900; }
+	.contact-email { @apply text-gray-600; }
+	
+	/* Job Card Components */
+	.job-avatar { @apply h-8 w-8 rounded-lg bg-[#2d9cdb] flex items-center justify-center text-white font-bold; }
+	.job-tag { @apply rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs text-gray-700; }
+	.job-visa-pill { @apply rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-gray-700; }
+	.job-visa-container { @apply hidden sm:flex items-center gap-2 text-[11px]; }
+	.job-status { @apply text-emerald-600 font-semibold mr-2; }
+	
+	/* Spacing and Layout */
+	.section { @apply space-y-3 sm:space-y-4; }
+	.section--small { @apply space-y-2 sm:space-y-3; }
+	.section--large { @apply space-y-4 sm:space-y-6; }
+	.section--compact { @apply space-y-4; }
+	
+	.divider { @apply my-4 border-t border-gray-200; }
+	
+	/* Responsive Utilities */
+	.responsive-text { @apply text-sm sm:text-base; }
+	.responsive-heading { @apply text-xl sm:text-2xl lg:text-3xl; }
+	.responsive-gap { @apply gap-2 sm:gap-3; }
+
+	/* Page Layout and Container */
+	.page-layout { @apply max-w-3xl mx-auto px-4 sm:px-6 lg:px-8; }
+	.page-title { @apply text-2xl font-bold text-gray-900; }
+	.page-title--mobile { @apply sm:hidden; }
+	.page-title--desktop { @apply hidden sm:inline; }
+	
+	/* Loading States */
+	.loading-skeleton { @apply bg-gradient-to-r from-gray-200 to-gray-300 rounded animate-pulse; }
+	.loading-skeleton--title { @apply h-8 w-40; }
+	.loading-skeleton--button { @apply h-10 w-32; }
+	.loading-skeleton--button-small { @apply h-10 w-24; }
+	.loading-skeleton--text { @apply h-6 w-56; }
+	.loading-skeleton--text-small { @apply h-4 w-20; }
+	.loading-skeleton--text-medium { @apply h-4 w-36; }
+	.loading-skeleton--text-large { @apply h-4 w-48; }
+	.loading-skeleton--value { @apply h-5 w-48; }
+	.loading-skeleton--value-small { @apply h-5 w-20; }
+	.loading-skeleton--value-medium { @apply h-5 w-32; }
+	.loading-skeleton--input { @apply h-12 w-full; }
+	.loading-skeleton--input-delay-1 { @apply delay-75; }
+	.loading-skeleton--input-delay-2 { @apply delay-150; }
+	
+	/* Header Layout */
+	.header-container { @apply flex items-center justify-between; }
+	.header-actions { @apply flex space-x-3; }
+	
+	/* Account Information */
+	.account-section { @apply space-y-3; }
+	.account-field { @apply space-y-3; }
+	.account-field--spaced { @apply pt-2 space-y-3; }
+	.account-label { @apply text-sm font-medium text-gray-500; }
+	.account-value { @apply mt-1 text-base text-gray-900; }
+	
+	/* Settings Section */
+	.settings-toggle { @apply overflow-hidden transition-all duration-300 ease-in-out; }
+	.settings-toggle--expanded { @apply max-h-[800px] opacity-100 mt-4; }
+	.settings-toggle--collapsed { @apply max-h-0 opacity-0; }
+	.settings-content { @apply space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200; }
+	.settings-actions { @apply space-y-3; }
+	
+	/* Icon Styles */
+	.icon { @apply h-4 w-4; }
+	.icon--small { @apply h-4 w-4; }
+	.icon--medium { @apply h-5 w-5; }
+	.icon--chevron { @apply w-4 h-4 transition-transform duration-200; }
+	.icon--chevron--rotated { @apply rotate-180; }
+	
+	/* Utility Classes */
+	.overflow-hidden { @apply overflow-hidden; }
+	.rounded-lg { @apply rounded-lg; }
+	.border-gray-200 { @apply border-gray-200; }
+	.bg-gray-50 { @apply bg-gray-50; }
+	.p-4 { @apply p-4; }
+	.space-y-4 { @apply space-y-4; }
+	.space-y-3 { @apply space-y-3; }
+	.space-y-6 { @apply space-y-6; }
+	.mb-4 { @apply mb-4; }
+	.mb-2 { @apply mb-2; }
+	.mt-1 { @apply mt-1; }
+	.mt-2 { @apply mt-2; }
+	.mt-4 { @apply mt-4; }
+	.mt-5 { @apply mt-5; }
+	.mt-6 { @apply mt-6; }
+	.mt-8 { @apply mt-6 sm:mt-8; }
+	.pt-2 { @apply pt-2; }
+	.pt-4 { @apply pt-4; }
+	.pb-4 { @apply pb-4; }
+	.py-4 { @apply py-4; }
+	.py-8 { @apply py-6 sm:py-8; }
+	.px-4 { @apply px-4; }
+	.px-6 { @apply px-6; }
+	.px-8 { @apply px-4 sm:px-8; }
+	.gap-3 { @apply gap-3; }
+	.gap-4 { @apply gap-4; }
+	.gap-6 { @apply gap-6; }
+	.gap-8 { @apply gap-8; }
+	.w-full { @apply w-full; }
+	.h-4 { @apply h-4; }
+	.h-5 { @apply h-5; }
+	.h-6 { @apply h-6; }
+	.h-8 { @apply h-8; }
+	.h-10 { @apply h-10; }
+	.h-12 { @apply h-12; }
+	.w-20 { @apply w-20; }
+	.w-24 { @apply w-24; }
+	.w-32 { @apply w-32; }
+	.w-36 { @apply w-36; }
+	.w-40 { @apply w-40; }
+	.w-48 { @apply w-48; }
+	.w-56 { @apply w-56; }
+}
+
+

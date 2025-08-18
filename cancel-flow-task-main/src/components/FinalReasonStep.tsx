@@ -1,7 +1,7 @@
 'use client';
 
-import Image from 'next/image';
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { Button, ModalHeader, ModalBody, TextInput, Textarea, FormField } from './ui';
 
 type FinalReasonStepProps = {
   onBack: () => void;
@@ -13,9 +13,8 @@ type FinalReasonStepProps = {
   onClose?: () => void;
   imageUrl?: string;
   initialReason?: string; // optional seed if you want to preselect
+  sawDownsell?: boolean; // Whether user saw the downsell step (affects step counting)
 };
-
-const GREEN = '#34c759';
 
 type OptionKey =
   | 'too_expensive'
@@ -60,7 +59,8 @@ export default function FinalReasonStep({
   onComplete,
   onClose,
   imageUrl = '/nyc.jpg',
-  initialReason
+  initialReason,
+  sawDownsell = false
 }: FinalReasonStepProps) {
   const [reason, setReason] = useState<OptionKey | ''>(
     (initialReason as OptionKey) || ''
@@ -107,20 +107,14 @@ export default function FinalReasonStep({
   };
 
   return (
-    <div
-      className="relative w-full max-w-5xl rounded-2xl bg-white shadow-2xl"
-      style={{
-        fontFamily:
-          'DF Sans, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial'
-      }}
-      role="dialog"
-      aria-modal="true"
-    >
+    <div className="modal-panel">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+      <ModalHeader onClose={onClose}>
+        {/* Back (left) */}
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900"
+          className="back-link"
+          aria-label="Go back"
         >
           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -128,196 +122,167 @@ export default function FinalReasonStep({
           Back
         </button>
 
-        <div className="text-sm font-semibold text-gray-900">
-          Subscription Cancellation
-        </div>
-
-        <div className="flex items-center gap-3 text-sm text-gray-600">
-          <div className="flex items-center gap-1">
-            <span className="h-2.5 w-6 rounded-full" style={{ backgroundColor: GREEN }} />
-            <span className="h-2.5 w-6 rounded-full" style={{ backgroundColor: GREEN }} />
-            <span className="h-2.5 w-6 rounded-full bg-gray-300" />
+        {/* Center: title + progress + step text */}
+        <div className="flex items-center gap-3">
+          <div className="section-title">Subscription Cancellation</div>
+          <div className="flex items-center gap-2">
+            <span className="step-text">
+              {sawDownsell ? 'Step 4 of 4' : 'Step 3 of 3'}
+            </span>
+            <div className="flex gap-1">
+              {sawDownsell ? (
+                // 4 steps: Initial -> Downsell -> Reason -> Final Reason -> Done
+                <>
+                  <div className="progress-pill--step"></div>
+                  <div className="progress-pill--step"></div>
+                  <div className="progress-pill--step"></div>
+                  <div className="progress-pill--step"></div>
+                </>
+              ) : (
+                // 3 steps: Initial -> Reason -> Final Reason -> Done
+                <>
+                  <div className="progress-pill--step"></div>
+                  <div className="progress-pill--step"></div>
+                  <div className="progress-pill--step"></div>
+                </>
+              )}
+            </div>
           </div>
-          <span>Step 3 of 3</span>
         </div>
-      </div>
+      </ModalHeader>
 
       {/* Body */}
-      <div className="grid grid-cols-1 gap-8 px-8 py-8 sm:grid-cols-2">
-        {/* Left column */}
-        <div className="sm:pr-6">
-          <h1 className="text-4xl font-semibold leading-tight text-gray-900">
-            What’s the main
-            <br /> reason for cancelling?
-          </h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Please take a minute to let us know why:
-          </p>
-
-          {/* Global validation note if nothing selected */}
-          {showReasonError && (
-            <p className="mt-4 text-sm text-red-600">
-              To help us understand your experience, please select a reason for cancelling*
+      <ModalBody>
+        <div className="content-grid">
+          {/* Left column */}
+          <div className="sm:pr-6">
+            <h1 className="heading-1">
+              What&apos;s the main
+              <br /> reason for cancelling?
+            </h1>
+            <p className="text-body text-muted">
+              Please take a minute to let us know why:
             </p>
-          )}
 
-          {/* Options */}
-          <div className="mt-4 space-y-3">
-            {(Object.keys(OPTIONS) as OptionKey[]).map(key => {
-              const opt = OPTIONS[key];
-              const active = reason === key;
-              return (
-                <button
-                  type="button"
-                  key={key}
-                  onClick={() => resetFollowups(key)}
-                  className={`flex items-center gap-3 w-full rounded-xl border bg-white px-4 py-3 text-left text-gray-800 hover:bg-gray-50 ${
-                    active ? 'border-gray-400' : 'border-gray-200'
-                  }`}
-                >
-                  <span
-                    className={`grid h-5 w-5 place-items-center rounded-full border ${
-                      active ? 'border-gray-800' : 'border-gray-400'
-                    }`}
+            {/* Global validation note if nothing selected */}
+            {showReasonError && (
+              <p className="text-error">
+                To help us understand your experience, please select a reason for cancelling*
+              </p>
+            )}
+
+            {/* Options */}
+            <div className="section--small">
+              <div className="space-y-3">
+                {(Object.keys(OPTIONS) as OptionKey[]).map(key => {
+                  const opt = OPTIONS[key];
+                  const active = reason === key;
+                  return (
+                    <button
+                      type="button"
+                      key={key}
+                      onClick={() => resetFollowups(key)}
+                      className={`flex items-center gap-3 w-full rounded-xl border bg-white px-4 py-3 text-left text-gray-800 hover:bg-gray-50 ${
+                        active ? 'border-gray-400' : 'border-gray-200'
+                      }`}
+                    >
+                      <span
+                        className={`grid h-5 w-5 place-items-center rounded-full border ${
+                          active ? 'border-gray-800' : 'border-gray-400'
+                        }`}
+                      >
+                        {active ? (
+                          <span className="h-2.5 w-2.5 rounded-full bg-gray-900" />
+                        ) : (
+                          <span className="h-2.5 w-2.5 rounded-full bg-transparent" />
+                        )}
+                      </span>
+                      <span className="text-sm">{opt.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Follow-up blocks */}
+            {reason && current?.requires !== 'none' && (
+              <>
+                <div className="divider" />
+                {/* Textarea follow-up */}
+                {needsText && (
+                  <FormField
+                    label={current?.prompt || ''}
+                    error={showTextError ? 'Please enter at least 25 characters so we can understand your feedback*' : undefined}
                   >
-                    {active ? (
-                      <span className="h-2.5 w-2.5 rounded-full bg-gray-900" />
-                    ) : (
-                      <span className="h-2.5 w-2.5 rounded-full bg-transparent" />
-                    )}
-                  </span>
-                  <span className="text-sm">{opt.label}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Follow-up blocks */}
-          {reason && current?.requires !== 'none' && (
-            <>
-              <div className="my-4 border-t border-gray-200" />
-              {/* Textarea follow-up */}
-              {needsText && (
-                <div>
-                  <p className="text-sm text-gray-800">
-                    {current?.prompt}
-                  </p>
-
-                  {showTextError && (
-                    <p className="mt-2 text-sm text-red-600">
-                      Please enter at least 25 characters so we can understand your feedback*
-                    </p>
-                  )}
-
-                  <div className={`relative mt-2`}>
-                    <textarea
+                    <Textarea
                       value={details}
                       onChange={e => setDetails(e.target.value)}
                       placeholder="Enter reason here..."
                       rows={5}
-                      className={`w-full resize-none rounded-xl border px-3 py-2 text-sm outline-none ${
-                        showTextError
-                          ? 'border-red-500 focus:border-red-500'
-                          : 'border-gray-300 focus:border-gray-500'
-                      }`}
+                      helperText={`Min 25 characters (${detailLen}/25)`}
                     />
-                    <div
-                      className={`pointer-events-none absolute bottom-2 right-3 text-xs ${
-                        detailOk ? 'text-emerald-600' : 'text-gray-500'
-                      }`}
-                    >
-                      Min 25 characters ({detailLen}/25)
-                    </div>
-                  </div>
-                </div>
-              )}
+                  </FormField>
+                )}
 
-              {/* Price follow-up */}
-              {needsPrice && (
-                <div className="mt-2">
-                  <p className="text-sm text-gray-800">
-                    {current?.prompt}
-                  </p>
-                  {showPriceError && (
-                    <p className="mt-2 text-sm text-red-600">
-                      Please enter a positive number.
-                    </p>
-                  )}
-                  <div className="mt-2 flex items-center">
-                    <div className={`relative w-full`}>
+                {/* Price follow-up */}
+                {needsPrice && (
+                  <FormField
+                    label={current?.prompt || ''}
+                    error={showPriceError ? 'Please enter a positive number.' : undefined}
+                  >
+                    <div className="relative">
                       <span className="pointer-events-none absolute left-3 top-2.5 text-sm text-gray-500">
                         $
                       </span>
-                      <input
+                      <TextInput
                         value={price}
                         onChange={e => setPrice(e.target.value)}
                         inputMode="decimal"
                         placeholder="$"
-                        className={`w-full rounded-xl border pl-7 pr-3 py-2 text-sm outline-none ${
-                          showPriceError
-                            ? 'border-red-500 focus:border-red-500'
-                            : 'border-gray-300 focus:border-gray-500'
-                        }`}
+                        className="pl-7"
                       />
                     </div>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
+                  </FormField>
+                )}
+              </>
+            )}
 
-          {/* Divider */}
-          <div className="my-4 border-t border-gray-200" />
+            {/* Divider */}
+            <div className="divider" />
 
-          {/* CTA buttons */}
-          <div className="space-y-3">
-            <button
-              onClick={() => console.log('Offer CTA')}
-              className="w-full rounded-xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-green-200"
-              style={{ backgroundColor: GREEN }}
-            >
-              Get 50% off | $12.50 <span className="opacity-80 line-through ml-1">$25</span>
-            </button>
+            {/* CTA buttons */}
+            <div className="space-y-3">
+              <Button
+                onClick={() => console.log('Offer CTA')}
+                variant="success"
+                fullWidth
+                size="lg"
+              >
+                Get 50% off | $12.50 <span className="opacity-80 line-through ml-1">$25</span>
+              </Button>
 
-            <button
-              onClick={handleSubmit}
-              disabled={!allValid}
-              className="w-full rounded-xl px-4 py-3 text-sm font-semibold disabled:opacity-50"
-              style={{
-                backgroundColor: allValid ? '#e23d3d' : '#e5e7eb',
-                color: allValid ? '#fff' : '#6b7280'
-              }}
-            >
-              Complete cancellation
-            </button>
+              <Button
+                onClick={handleSubmit}
+                disabled={!allValid}
+                variant="danger"
+                fullWidth
+                size="lg"
+              >
+                Complete cancellation
+              </Button>
+            </div>
+          </div>
+
+          {/* Right image */}
+          <div className="image-container">
+            <img
+              src={imageUrl}
+              alt="NYC skyline"
+              className="h-full w-full object-cover"
+            />
           </div>
         </div>
-
-        {/* Right image */}
-        <div className="overflow-hidden rounded-2xl">
-          <Image
-            src={imageUrl}
-            alt="NYC skyline"
-            width={1200}
-            height={900}
-            className="h-full w-full object-cover"
-            priority={false}
-          />
-        </div>
-      </div>
-
-      {/* Optional close */}
-      {onClose && (
-        <button
-          onClick={onClose}
-          aria-label="Close"
-          className="absolute right-4 top-3.5 rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-        >
-          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      )}
+      </ModalBody>
     </div>
   );
 }

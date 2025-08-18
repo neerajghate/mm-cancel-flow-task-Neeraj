@@ -1,129 +1,243 @@
-# Migrate Mate - Subscription Cancellation Flow Challenge
+# Migrate Mate Cancellation Flow
 
-## Overview
+A comprehensive cancellation flow application with A/B testing, local database persistence, and security features.
 
-Convert an existing Figma design into a fully-functional subscription-cancellation flow for Migrate Mate. This challenge tests your ability to implement pixel-perfect UI, handle complex business logic, and maintain security best practices.
+## 🚀 Quick Start
 
-## Objective
+```bash
+npm install
+npm run db:setup
+npm run dev
+```
 
-Implement the Figma-designed cancellation journey exactly on mobile + desktop, persist outcomes securely, and instrument the A/B downsell logic.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## What's Provided
+## ✨ Features
 
-This repository contains:
-- ✅ Next.js + TypeScript + Tailwind scaffold
-- ✅ `seed.sql` with users table (25/29 USD plans) and empty cancellations table
-- ✅ Local Supabase configuration for development
-- ✅ Basic Supabase client setup in `src/lib/supabase.ts`
+### 🧪 A/B Testing
+- **Deterministic A/B (50/50)**: Users are assigned to variant A or B on first entry
+- **Variant A**: Sees downsell offer (50% off)
+- **Variant B**: Skips downsell ($10 off instead)
+- **Persistent Assignment**: Bucket assignment persists across sessions
 
-## Tech Stack (Preferred)
+### 💾 Local Database
+- **Browser Storage**: Data persists in localStorage between sessions
+- **Server Memory**: Fallback storage for server-side operations
+- **Sample Data**: Pre-seeded with 3 users and active subscriptions
+- **No External Dependencies**: Works offline without configuration
 
-- **Next.js** with App Router
-- **React** with TypeScript
-- **Tailwind CSS** for styling
-- **Supabase** (Postgres + Row-Level Security)
+### 🔒 Security Features
+- **Input Validation**: Zod-based schema validation
+- **XSS Prevention**: HTML escaping and sanitization
+- **CSRF Protection**: Token-based request validation
+- **Rate Limiting**: Request throttling by IP
+- **Security Headers**: Comprehensive HTTP security headers
 
-> **Alternative stacks allowed** if your solution:
-> 1. Runs with `npm install && npm run dev`
-> 2. Persists to a Postgres-compatible database
-> 3. Enforces table-level security
+### 📱 User Experience
+- **Mobile Responsive**: Optimized for all device sizes
+- **Progress Tracking**: Visual step indicators
+- **Error Handling**: Comprehensive validation and error states
+- **Accessibility**: ARIA labels and keyboard navigation
 
-## Must-Have Features
+## 🗄️ Database Schema
 
-### 1. Progressive Flow (Figma Design)
-- Implement the exact cancellation journey from provided Figma
-- Ensure pixel-perfect fidelity on both mobile and desktop
-- Handle all user interactions and state transitions
+### Users Table
+```typescript
+interface User {
+  id: string;
+  email: string;
+  created_at: string;
+}
+```
 
-### 2. Deterministic A/B Testing (50/50 Split)
-- **On first entry**: Assign variant via cryptographically secure RNG
-- **Persist** variant to `cancellations.downsell_variant` field
-- **Reuse** variant on repeat visits (never re-randomize)
+### Subscriptions Table
+```typescript
+interface Subscription {
+  id: string;
+  user_id: string;
+  monthly_price: number;
+  status: 'active' | 'pending_cancellation' | 'cancelled';
+  created_at: string;
+  updated_at: string;
+}
+```
 
-**Variant A**: No downsell screen
-**Variant B**: Show "$10 off" offer
-- Price $25 → $15, Price $29 → $19
-- **Accept** → Log action, take user back to profile page (NO ACTUAL PAYMENT PROCESSING REQUIRED)
-- **Decline** → Continue to reason selection in flow
+### Cancellations Table
+```typescript
+interface Cancellation {
+  id: string;
+  user_id: string;
+  subscription_id: string;
+  downsell_variant: 'A' | 'B';
+  reason?: string;
+  accepted_downsell: boolean;
+  created_at: string;
+}
+```
 
-### 3. Data Persistence
-- Mark subscription as `pending_cancellation` in database
-- Create cancellation record with:
-  - `user_id`
-  - `downsell_variant` (A or B)
-  - `reason` (from user selection)
-  - `accepted_downsell` (boolean)
-  - `created_at` (timestamp)
+## 🔄 A/B Testing Flow
 
-### 4. Security Requirements
-- **Row-Level Security (RLS)** policies
-- **Input validation** on all user inputs
-- **CSRF/XSS protection**
-- Secure handling of sensitive data
+1. **User Entry**: First-time users get randomly assigned to bucket A or B
+2. **Variant A (50%)**: Sees downsell offer with 50% discount
+3. **Variant B (50%)**: Skips downsell, goes directly to reason collection
+4. **Persistence**: Assignment stored locally and reused on return visits
+5. **Analytics**: All A/B interactions tracked for analysis
 
-### 5. Reproducible Setup
-- `npm run db:setup` creates schema and seed data (local development)
-- Clear documentation for environment setup
+## 🛠️ Development
 
-## Out of Scope
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
 
-- **Payment processing** - Stub with comments only
-- **User authentication** - Use mock user data
-- **Email notifications** - Not required
-- **Analytics tracking** - Focus on core functionality
+### Setup
+```bash
+# Install dependencies
+npm install
 
-## Getting Started
+# Setup local database with sample data
+npm run db:setup
 
-1. **Clone this repository** `git clone [repo]`
-2. **Install dependencies**: `npm install`
-3. **Set up local database**: `npm run db:setup`
-4. **Start development**: `npm run dev`
+# Start development server
+npm run dev
+```
 
-## Database Schema
+### Available Scripts
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run db:setup` - Initialize local database
 
-The `seed.sql` file provides a **starting point** with:
-- `users` table with sample users
-- `subscriptions` table with $25 and $29 plans
-- `cancellations` table (minimal structure - **you'll need to expand this**)
-- Basic RLS policies (enhance as needed)
+### Project Structure
+```
+src/
+├── app/                 # Next.js app directory
+├── components/          # React components
+├── hooks/              # Custom React hooks
+├── lib/                # Utility libraries
+├── services/           # Business logic services
+└── constants/          # Configuration constants
+```
 
-### Important: Schema Design Required
+## 🔍 Testing
 
-The current `cancellations` table is intentionally minimal. You'll need to:
-- **Analyze the cancellation flow requirements** from the Figma design
-- **Design appropriate table structure(s)** to capture all necessary data
-- **Consider data validation, constraints, and relationships**
-- **Ensure the schema supports the A/B testing requirements**
+### Local Database Testing
+```bash
+npm run db:setup
+```
 
-## Evaluation Criteria
+This will:
+- Initialize sample data (3 users, 3 subscriptions)
+- Test A/B testing functionality
+- Verify database operations
+- Confirm all features are working
 
-- **Functionality (40%)**: Feature completeness and correctness
-- **Code Quality (25%)**: Clean, maintainable, well-structured code
-- **Pixel/UX Fidelity (15%)**: Accuracy to Figma design
-- **Security (10%)**: Proper RLS, validation, and protection
-- **Documentation (10%)**: Clear README and code comments
+### Manual Testing
+1. Open the application in your browser
+2. Click "Cancel Subscription" to start the flow
+3. Test both "Yes, I found a job" and "Not yet" paths
+4. Verify A/B testing works (check console for bucket assignment)
+5. Complete the cancellation flow
+6. Refresh the page to verify data persistence
 
-## Deliverables
+## 📊 Monitoring
 
-1. **Working implementation** in this repository
-2. **NEW One-page README.md (replace this)** (≤600 words) explaining:
-   - Architecture decisions
-   - Security implementation
-   - A/B testing approach
-3. **Clean commit history** with meaningful messages
+### Console Logging
+- A/B test assignments and interactions
+- Database operations (create, read, update)
+- User actions and form submissions
+- Error handling and validation
 
-## Timeline
+### Data Inspection
+- Check browser localStorage for persistent data
+- Monitor network requests (minimal, local only)
+- Review console logs for debugging
 
-Submit your solution within **72 hours** of receiving this repository.
+## 🚀 Production Deployment
 
-## AI Tooling
+### Environment Variables
+No external environment variables required for local database mode.
 
-Using Cursor, ChatGPT, Copilot, etc. is **encouraged**. Use whatever accelerates your development—just ensure you understand the code and it runs correctly.
+### Build Process
+```bash
+npm run build
+npm run start
+```
 
-## Questions?
+### Data Persistence
+- **Development**: localStorage in browser
+- **Production**: Can be easily migrated to real database
+- **Migration**: DatabaseService abstracts storage layer
 
-Review the challenge requirements carefully. If you have questions about specific implementation details, make reasonable assumptions and document them in your README.
+## 🔧 Customization
 
----
+### A/B Testing Configuration
+Edit `src/constants/config.ts` to modify:
+- Distribution percentages
+- Pricing variants
+- Test parameters
 
-**Good luck!** We're excited to see your implementation.
+### Database Schema
+Modify `src/lib/localDb.ts` to add:
+- New tables
+- Additional fields
+- Sample data
+
+### Security Settings
+Adjust `src/lib/security.ts` for:
+- Rate limiting thresholds
+- Validation rules
+- Security headers
+
+## 🐛 Troubleshooting
+
+### Common Issues
+1. **Data not persisting**: Check browser localStorage support
+2. **A/B testing not working**: Clear localStorage and refresh
+3. **Build errors**: Ensure all dependencies are installed
+
+### Reset Database
+```bash
+# Clear all local data
+npm run db:setup
+```
+
+### Debug Mode
+Check browser console for:
+- Database operations
+- A/B test assignments
+- Error messages
+- Validation results
+
+## 📈 Future Enhancements
+
+### Database Migration
+The local database can be easily replaced with:
+- PostgreSQL/MySQL
+- MongoDB
+- Supabase/Firebase
+- Custom API endpoints
+
+### Analytics Integration
+- Google Analytics
+- Mixpanel
+- Custom tracking
+- A/B test results
+
+### Performance Optimization
+- Image optimization
+- Code splitting
+- Caching strategies
+- Bundle optimization
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.

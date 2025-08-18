@@ -1,110 +1,97 @@
 'use client';
 
-import Image from 'next/image';
+import React from 'react';
+import { Button, ModalHeader, ModalBody } from './ui';
 
 type CancelCompleteStepProps = {
-  onBack: () => void;
-  onJobs: () => void;          // primary CTA
-  onClose?: () => void;
-  imageUrl?: string;
-  endDate?: string;            // formatted date string
+  onJobs: () => void;
+  onClose: () => void;
+  endDate: string;
+  sawDownsell?: boolean; // Whether user saw the downsell step (affects step counting)
 };
 
-const GREEN = '#34c759';
-const PURPLE = '#8952fc';
-const PURPLE_HOVER = '#7b40fc';
-
 export default function CancelCompleteStep({
-  onBack,
   onJobs,
   onClose,
-  imageUrl = '/nyc.jpg',
-  endDate = 'XX date'
+  endDate,
+  sawDownsell = false,
 }: CancelCompleteStepProps) {
   return (
-    <div
-      className="relative w-full max-w-5xl rounded-2xl bg-white shadow-2xl"
-      style={{
-        fontFamily:
-          'DF Sans, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial'
-      }}
-      role="dialog"
-      aria-modal="true"
-    >
+    <div className="modal-panel">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-        <button
-          onClick={onBack}
-          className="inline-flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900"
-        >
-          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Back
-        </button>
-
-        <div className="text-sm font-semibold text-gray-900">
-          Subscription Cancelled
-        </div>
-
-        <div className="flex items-center gap-3 text-sm text-gray-600">
-          <div className="flex items-center gap-1">
-            <span className="h-2.5 w-6 rounded-full" style={{ backgroundColor: GREEN }} />
-            <span className="h-2.5 w-6 rounded-full" style={{ backgroundColor: GREEN }} />
-            <span className="h-2.5 w-6 rounded-full" style={{ backgroundColor: GREEN }} />
+      <ModalHeader onClose={onClose}>
+        <div className="flex items-center gap-3">
+          <div className="section-title">
+            Subscription Cancelled
           </div>
-          <span>Completed</span>
+          <div className="flex items-center gap-2">
+            <span className="step-text">
+              {sawDownsell ? 'Step 4 of 4' : 'Step 3 of 3'}
+            </span>
+            <div className="flex gap-1">
+              {sawDownsell ? (
+                // 4 steps: Initial -> Downsell -> Reason -> Final Reason -> Done
+                <>
+                  <div className="progress-pill--step"></div>
+                  <div className="progress-pill--step"></div>
+                  <div className="progress-pill--step"></div>
+                  <div className="progress-pill--step"></div>
+                </>
+              ) : (
+                // 3 steps: Initial -> Reason -> Final Reason -> Done
+                <>
+                  <div className="progress-pill--step"></div>
+                  <div className="progress-pill--step"></div>
+                  <div className="progress-pill--step"></div>
+                </>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
+      </ModalHeader>
 
       {/* Body */}
-      <div className="grid grid-cols-1 gap-8 px-8 py-8 sm:grid-cols-2">
-        {/* Left copy */}
-        <div className="sm:pr-6">
-          <h1 className="text-4xl font-semibold leading-tight text-gray-900">
-            Sorry to see you go, mate.
-          </h1>
+      <ModalBody>
+        <div className="content-grid">
+          {/* Left: copy + actions */}
+          <div className="sm:pr-6">
+            <h1 className="heading-1">
+              Your subscription has been cancelled
+            </h1>
+            <h2 className="heading-2">
+              We&apos;re sorry to see you go
+            </h2>
+            <p className="text-body">
+              Your subscription is set to end on <span className="font-medium">{endDate}</span>.
+            </p>
+            <p className="text-muted text-muted--large">
+              You&apos;ll continue to have access to all features until then.
+            </p>
 
-          <h2 className="mt-4 text-3xl font-semibold leading-snug text-gray-900">
-            Thanks for being with us, and you’re
-            <br /> always welcome back.
-          </h2>
+            <div className="divider" />
 
-          <p className="mt-6 text-gray-700">
-            Your subscription is set to end on <span className="font-medium">{endDate}</span>.
-            <br />
-            You’ll still have full access until then. No further charges after that.
-          </p>
+            <div className="section">
+              <Button
+                onClick={onJobs}
+                variant="primary"
+                fullWidth
+                size="lg"
+              >
+                Back to Jobs
+              </Button>
+            </div>
+          </div>
 
-          <p className="mt-4 text-gray-600">
-            Changed your mind? You can reactivate anytime before your end date.
-          </p>
-
-          <div className="my-6 border-t border-gray-200" />
-
-          <button
-            onClick={onJobs}
-            className="w-full rounded-xl px-4 py-3 text-sm font-semibold text-white transition-colors"
-            style={{ backgroundColor: PURPLE }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = PURPLE_HOVER)}
-            onMouseLeave={e => (e.currentTarget.style.backgroundColor = PURPLE)}
-          >
-            Back to Jobs
-          </button>
+          {/* Right: image */}
+          <div className="image-container">
+            <img
+              src="/nyc.jpg"
+              alt="NYC skyline"
+              className="h-full w-full object-cover"
+            />
+          </div>
         </div>
-
-        {/* Right image */}
-        <div className="overflow-hidden rounded-2xl">
-          <Image
-            src={imageUrl}
-            alt="NYC skyline"
-            width={1200}
-            height={900}
-            className="h-full w-full object-cover"
-            priority={false}
-          />
-        </div>
-      </div>
+      </ModalBody>
     </div>
   );
 }
