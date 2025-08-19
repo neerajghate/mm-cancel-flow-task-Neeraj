@@ -24,16 +24,29 @@ export default function CancelModal({
 
   const Panel = (
     <div className="modal-panel" role="dialog" aria-modal="true">
-      {/* Header: centered title, close button floats right */}
-      <ModalHeader onClose={onClose} showCloseButton={true}>
-        <h3 className="section-title">Subscription Cancellation</h3>
-      </ModalHeader>
+             {/* Header: simple title only */}
+       <ModalHeader onClose={onClose} showCloseButton={true}>
+         <div className="flex items-center w-full">
+           <h3 className="section-title mx-auto">Subscription Cancellation</h3>
+         </div>
+               </ModalHeader>
 
-      {/* Body */}
+       {/* NYC Image below header - Mobile only */}
+       <div className="px-6 py-4 sm:hidden">
+         <div className="image-container image-container--small">
+           <img
+             src={imageUrl}
+             alt="NYC skyline"
+             className="h-full w-full object-cover"
+           />
+         </div>
+       </div>
+
+       {/* Body */}
       <ModalBody>
         <div className="content-grid">
           {/* Left: copy + actions */}
-          <div className="sm:pr-6">
+          <div className="sm-pr-6">
             <div className="space-y-3">
               <p className="heading-1">
                 Hey mate,
@@ -70,8 +83,8 @@ export default function CancelModal({
             </div>
           </div>
 
-          {/* Right: image */}
-          <div className="image-container image-container--small">
+          {/* Right: image - Desktop only */}
+          <div className="hidden sm:block image-container image-container--small">
             <img
               src={imageUrl}
               alt="NYC skyline"

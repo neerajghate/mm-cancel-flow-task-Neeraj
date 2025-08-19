@@ -5,9 +5,10 @@ import { Button, ModalHeader, ModalBody, FormField, TextInput } from './ui';
 
 type FoundJobVisaYesStepProps = {
 	onBack: () => void;
-	onComplete: (payload: { hasCompanyLawyer: boolean; visa: string }) => void;
+	onComplete: (payload: { hasCompanyLawyer: boolean; visa: string; foundWithMate: '' | 'Yes' | 'No' }) => void;
 	onClose: () => void;
 	imageUrl?: string;
+	foundJobData?: { foundWithMate: '' | 'Yes' | 'No' };
 };
 
 export default function FoundJobVisaYesStep({
@@ -15,52 +16,97 @@ export default function FoundJobVisaYesStep({
 	onComplete,
 	onClose,
 	imageUrl = '/nyc.jpg',
+	foundJobData,
 }: FoundJobVisaYesStepProps) {
 	const [answer, setAnswer] = useState<'' | 'yes' | 'no'>('');
 	const [visa, setVisa] = useState('');
 	const [touched, setTouched] = useState(false);
 
-	const visaValid = visa.trim().length > 0;
-	const canSubmit = !!answer && visaValid;
+	const visaValid = answer === 'no' ? true : visa.trim().length > 0;
+	const canSubmit = !!answer && (answer === 'no' || visaValid);
 
 	const submit = () => {
 		if (!canSubmit) {
 			setTouched(true);
 			return;
 		}
-		onComplete({ hasCompanyLawyer: answer === 'yes', visa: visa.trim() });
+		
+		if (answer === 'yes') {
+			// If yes company lawyer, route to milaho page
+			onComplete({ 
+				hasCompanyLawyer: false, 
+				visa: 'milaho',
+				foundWithMate: foundJobData?.foundWithMate || 'Yes'
+			});
+		} else {
+			// If no company lawyer, collect visa info
+			onComplete({ 
+				hasCompanyLawyer: true, 
+				visa: visa.trim(),
+				foundWithMate: foundJobData?.foundWithMate || 'Yes'
+			});
+		}
 	};
 
 	return (
 		<div className="modal-panel">
-			{/* Header */}
+			{/* Header: responsive layout - mobile: title+progress left, desktop: original layout */}
 			<ModalHeader onClose={onClose}>
-				<div className="flex items-center justify-between w-full">
-					<div className="flex items-center gap-3">
-									 <button
-					   onClick={onBack}
-					   className="back-link"
-					   aria-label="Go back"
-					 >
-					   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-					     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-					   </svg>
-					   Back
-					 </button>
-						<div className="section-title">Subscription Cancellation</div>
+				<div className="flex items-center w-full">
+					{/* Mobile: title and progress stacked on left */}
+					<div className="flex flex-col gap-2 sm:hidden">
+						<div className="section-title text-left">Subscription Cancellation</div>
+						<div className="flex items-center gap-2">
+							<div className="flex gap-1">
+								<div className="w-4 h-1.5 bg-green-500 rounded-full"></div>
+								<div className="w-4 h-1.5 bg-green-500 rounded-full"></div>
+								<div className="w-4 h-1.5 bg-green-500 rounded-full"></div>
+							</div>
+							<div className="text-xs text-gray-600">Step 3 of 3</div>
+						</div>
 					</div>
-					
-					{/* Progress Indicator */}
-					<div className="flex items-center gap-2">
-						<span className="step-text">Step 3 of 3</span>
-						<div className="flex gap-1">
-							<div className="progress-pill--step"></div>
-							<div className="progress-pill--step"></div>
-							<div className="progress-pill--step"></div>
+
+					{/* Desktop: original layout with back button in header */}
+					<div className="hidden sm:flex items-center w-full">
+						<button
+							onClick={onBack}
+							className="back-link"
+							aria-label="Go back"
+						>
+							<svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+							</svg>
+							Back
+						</button>
+						
+						<div className="flex items-center gap-3 mx-auto">
+							<div className="section-title">Subscription Cancellation</div>
+							<div className="flex items-center gap-2">
+								<span className="step-text">Step 3 of 3</span>
+								<div className="flex gap-1">
+									<div className="progress-pill--step"></div>
+									<div className="progress-pill--step"></div>
+									<div className="progress-pill--step"></div>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
 			</ModalHeader>
+
+			{/* Mobile: Back button below header */}
+			<div className="sm:hidden px-6 py-3 border-b border-gray-100">
+				<button
+					onClick={onBack}
+					className="back-link flex items-center gap-2"
+					aria-label="Go back"
+				>
+					<svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+					</svg>
+					<span className="text-sm font-medium">Back</span>
+				</button>
+			</div>
 
 			{/* Body */}
 			<ModalBody>
@@ -80,7 +126,7 @@ export default function FoundJobVisaYesStep({
 
 						<div className="section section--large">
 							<div className="section--compact">
-								<p className="text-body--large">
+								<p className="visa-question-text">
 									Is your company providing an immigration lawyer to help with your visa?
 								</p>
 
@@ -109,7 +155,7 @@ export default function FoundJobVisaYesStep({
 								</div>
 
 								{answer !== '' && (
-									<div className="section--small">
+									<div className="section--small mt-4">
 										{answer === 'no' ? (
 											<>
 												<p className="text-muted">
@@ -141,7 +187,7 @@ export default function FoundJobVisaYesStep({
 							</div>
 						</div>
 
-						<div className="section">
+						<div className="section mt-6">
 							<Button
 								disabled={!canSubmit}
 								onClick={submit}
@@ -155,8 +201,8 @@ export default function FoundJobVisaYesStep({
 						</div>
 					</div>
 
-					{/* Right image */}
-					<div className="image-container">
+					{/* Right image - Desktop only */}
+					<div className="hidden sm:block image-container">
 						<img
 							src={imageUrl}
 							alt="NYC skyline"

@@ -114,25 +114,26 @@ export interface InfoCardProps {
   title: string;
   value?: string;
   status?: 'success' | 'warning' | 'error' | 'info';
+  showStatusText?: boolean;
   className?: string;
 }
 
-export function InfoCard({ icon, title, value, status, className }: InfoCardProps) {
+export function InfoCard({ icon, title, value, status, showStatusText = false, className }: InfoCardProps) {
   return (
     <div className={cn(
       'info-card',
       className
     )}>
-      <div className="flex items-center space-x-3">
-        {icon && (
-          <div className="flex-shrink-0">
-            {icon}
-          </div>
-        )}
-        <p className="text-sm font-medium text-gray-900">{title}</p>
-      </div>
-      
-      {value && (
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          {icon && (
+            <div className="flex-shrink-0">
+              {icon}
+            </div>
+          )}
+          <p className="text-sm font-medium text-gray-900">{title}</p>
+        </div>
+        
         <div className="flex items-center space-x-2">
           {status && (
             <span className={cn(
@@ -142,15 +143,21 @@ export function InfoCard({ icon, title, value, status, className }: InfoCardProp
               status === 'error' && 'badge--error',
               status === 'info' && 'badge--info'
             )}>
-              {status === 'success' && 'Active'}
-              {status === 'warning' && 'Warning'}
-              {status === 'error' && 'Error'}
-              {status === 'info' && 'Info'}
+              {showStatusText && (
+                <>
+                  {status === 'success' && 'Active'}
+                  {status === 'warning' && 'Warning'}
+                  {status === 'error' && 'Error'}
+                  {status === 'info' && 'Info'}
+                </>
+              )}
             </span>
           )}
-          <p className="text-sm font-medium text-gray-900">{value}</p>
+          {value && (
+            <p className="text-sm font-medium text-gray-900">{value}</p>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

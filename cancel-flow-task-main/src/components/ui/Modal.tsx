@@ -78,7 +78,7 @@ export function ModalHeader({ children, onClose, showCloseButton = true, classNa
         <button
           onClick={onClose}
           aria-label="Close"
-          className="icon-button"
+          className="modal-close-button--header"
         >
           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

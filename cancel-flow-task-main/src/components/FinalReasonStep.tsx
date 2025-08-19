@@ -1,19 +1,15 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
-import { Button, ModalHeader, ModalBody, TextInput, Textarea, FormField } from './ui';
+import React, { useState, useMemo } from 'react';
+import { Button, ModalHeader, ModalBody, FormField, TextInput, Textarea } from './ui';
+import { CancelReasonPayload } from '../hooks/useCancelFlow';
 
 type FinalReasonStepProps = {
   onBack: () => void;
-  onComplete: (payload: {
-    reason: string;
-    details?: string;
-    priceMax?: number | null;
-  }) => void;
+  onComplete: (payload: CancelReasonPayload) => Promise<void>;
   onClose?: () => void;
   imageUrl?: string;
-  initialReason?: string; // optional seed if you want to preselect
-  sawDownsell?: boolean; // Whether user saw the downsell step (affects step counting)
+  initialReason?: string;
 };
 
 type OptionKey =
@@ -59,8 +55,7 @@ export default function FinalReasonStep({
   onComplete,
   onClose,
   imageUrl = '/nyc.jpg',
-  initialReason,
-  sawDownsell = false
+  initialReason
 }: FinalReasonStepProps) {
   const [reason, setReason] = useState<OptionKey | ''>(
     (initialReason as OptionKey) || ''
@@ -68,6 +63,7 @@ export default function FinalReasonStep({
   const [details, setDetails] = useState('');
   const [price, setPrice] = useState<string>(''); // keep as string for input
   const [touched, setTouched] = useState(false);
+  const [showReasonSelection, setShowReasonSelection] = useState(true);
 
   const current = reason ? OPTIONS[reason] : undefined;
   const needsText = current?.requires === 'text';
@@ -79,7 +75,7 @@ export default function FinalReasonStep({
     const n = Number(price.replace(/[^\d.]/g, ''));
     return Number.isFinite(n) ? n : NaN;
   }, [price]);
-  const priceOk = !needsPrice || (price.trim() !== '' && priceNum > 0);
+  const priceOk = !needsPrice || (priceNum > 0 && priceNum <= 1000);
 
   const allValid = Boolean(reason) && detailOk && priceOk;
 
@@ -93,10 +89,17 @@ export default function FinalReasonStep({
       return;
     }
     onComplete({
-      reason,
-      details: needsText ? details.trim() : undefined,
-      priceMax: needsPrice ? priceNum : null
+      reason: reason || '',
+      details: needsText ? details : undefined
     });
+  };
+
+  const handleBackToReasonSelection = () => {
+    setShowReasonSelection(true);
+    setReason('');
+    setDetails('');
+    setPrice('');
+    setTouched(false);
   };
 
   const resetFollowups = (key: OptionKey) => {
@@ -104,114 +107,151 @@ export default function FinalReasonStep({
     setTouched(false);
     setDetails('');
     setPrice('');
+    setShowReasonSelection(false);
   };
 
   return (
     <div className="modal-panel">
-      {/* Header */}
-      <ModalHeader onClose={onClose}>
-        {/* Back (left) */}
-        <button
-          onClick={onBack}
-          className="back-link"
-          aria-label="Go back"
-        >
-          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Back
-        </button>
+             {/* Header: responsive layout - mobile: title+progress left, desktop: original layout */}
+       <ModalHeader onClose={onClose}>
+         <div className="flex items-center w-full">
+           {/* Mobile: title and progress stacked on left */}
+           <div className="flex flex-col gap-2 sm:hidden">
+             <div className="section-title text-left">Subscription Cancellation</div>
+             <div className="flex items-center gap-2">
+               <div className="flex gap-1">
+                 <div className="w-4 h-1.5 bg-green-500 rounded-full"></div>
+                 <div className="w-4 h-1.5 bg-green-500 rounded-full"></div>
+                 <div className="w-4 h-1.5 bg-green-500 rounded-full"></div>
+               </div>
+               <div className="text-xs text-gray-600">Step 3 of 3</div>
+             </div>
+           </div>
 
-        {/* Center: title + progress + step text */}
-        <div className="flex items-center gap-3">
-          <div className="section-title">Subscription Cancellation</div>
-          <div className="flex items-center gap-2">
-            <span className="step-text">
-              {sawDownsell ? 'Step 4 of 4' : 'Step 3 of 3'}
-            </span>
-            <div className="flex gap-1">
-              {sawDownsell ? (
-                // 4 steps: Initial -> Downsell -> Reason -> Final Reason -> Done
-                <>
-                  <div className="progress-pill--step"></div>
-                  <div className="progress-pill--step"></div>
-                  <div className="progress-pill--step"></div>
-                  <div className="progress-pill--step"></div>
-                </>
-              ) : (
-                // 3 steps: Initial -> Reason -> Final Reason -> Done
-                <>
-                  <div className="progress-pill--step"></div>
-                  <div className="progress-pill--step"></div>
-                  <div className="progress-pill--step"></div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </ModalHeader>
+           {/* Desktop: original layout with back button in header */}
+           <div className="hidden sm:flex items-center w-full">
+             <button
+               onClick={onBack}
+               className="back-link flex items-center gap-2"
+               aria-label="Go back"
+             >
+               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+               </svg>
+               Back
+             </button>
+
+             <div className="flex items-center gap-3 mx-auto">
+               <div className="section-title">Subscription Cancellation</div>
+               <div className="flex items-center gap-2">
+                 <span className="step-text">Step 3 of 3</span>
+                 <div className="flex gap-1">
+                   <div className="progress-pill--step"></div>
+                   <div className="progress-pill--step"></div>
+                   <div className="progress-pill--step"></div>
+                 </div>
+               </div>
+             </div>
+           </div>
+         </div>
+       </ModalHeader>
+
+       {/* Mobile: Back button below header */}
+       <div className="sm:hidden px-6 py-3 border-b border-gray-100">
+         <button
+           onClick={onBack}
+           className="back-link flex items-center gap-2"
+           aria-label="Go back"
+         >
+           <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+           </svg>
+           <span className="text-sm font-medium">Back</span>
+         </button>
+       </div>
 
       {/* Body */}
       <ModalBody>
         <div className="content-grid">
           {/* Left column */}
           <div className="sm:pr-6">
-            <h1 className="heading-1">
-              What&apos;s the main
-              <br /> reason for cancelling?
-            </h1>
-            <p className="text-body text-muted">
-              Please take a minute to let us know why:
-            </p>
-
-            {/* Global validation note if nothing selected */}
-            {showReasonError && (
-              <p className="text-error">
-                To help us understand your experience, please select a reason for cancelling*
-              </p>
-            )}
-
-            {/* Options */}
-            <div className="section--small">
-              <div className="space-y-3">
-                {(Object.keys(OPTIONS) as OptionKey[]).map(key => {
-                  const opt = OPTIONS[key];
-                  const active = reason === key;
-                  return (
-                    <button
-                      type="button"
-                      key={key}
-                      onClick={() => resetFollowups(key)}
-                      className={`flex items-center gap-3 w-full rounded-xl border bg-white px-4 py-3 text-left text-gray-800 hover:bg-gray-50 ${
-                        active ? 'border-gray-400' : 'border-gray-200'
-                      }`}
-                    >
-                      <span
-                        className={`grid h-5 w-5 place-items-center rounded-full border ${
-                          active ? 'border-gray-800' : 'border-gray-400'
-                        }`}
-                      >
-                        {active ? (
-                          <span className="h-2.5 w-2.5 rounded-full bg-gray-900" />
-                        ) : (
-                          <span className="h-2.5 w-2.5 rounded-full bg-transparent" />
-                        )}
-                      </span>
-                      <span className="text-sm">{opt.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Follow-up blocks */}
-            {reason && current?.requires !== 'none' && (
+            {showReasonSelection ? (
+              // REASON SELECTION VIEW
               <>
-                <div className="divider" />
+                <h1 className="heading-1">
+                  What&apos;s the main
+                  <br /> reason for cancelling?
+                </h1>
+                <p className="text-body text-muted">
+                  Please take a minute to let us know why:
+                </p>
+
+                {/* Global validation note if nothing selected */}
+                {showReasonError && (
+                  <p className="text-error">
+                    To help us understand your experience, please select a reason for cancelling*
+                  </p>
+                )}
+
+                {/* Options */}
+                <div className="section--small">
+                  <div className="space-y-3">
+                    {(Object.keys(OPTIONS) as OptionKey[]).map(key => {
+                      const opt = OPTIONS[key];
+                      const active = reason === key;
+                      return (
+                        <button
+                          type="button"
+                          key={key}
+                          onClick={() => resetFollowups(key)}
+                          className={`flex items-center gap-3 w-full rounded-xl border bg-white px-4 py-3 text-left text-gray-800 hover-bg-gray-50 ${
+                            active ? 'border-gray-400' : 'border-gray-200'
+                          }`}
+                        >
+                          <span
+                            className={`grid h-5 w-5 place-items-center rounded-full border ${
+                              active ? 'border-gray-800' : 'border-gray-400'
+                            }`}
+                          >
+                            {active ? (
+                              <span className="h-2-5 w-2-5 rounded-full bg-gray-900" />
+                            ) : (
+                              <span className="h-2-5 w-2-5 rounded-full bg-transparent" />
+                            )}
+                          </span>
+                          <span className="text-sm">{opt.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            ) : (
+              // FOLLOW-UP VIEW
+              <>
+                <div className="flex items-center gap-3 mb-4">
+                  <button
+                    onClick={handleBackToReasonSelection}
+                    className="back-link"
+                  >
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Back
+                  </button>
+                </div>
+                
+                <h1 className="heading-1">
+                  {current?.label}
+                </h1>
+                <p className="text-body text-muted">
+                  {current?.prompt}
+                </p>
+
                 {/* Textarea follow-up */}
                 {needsText && (
                   <FormField
-                    label={current?.prompt || ''}
+                    label=""
                     error={showTextError ? 'Please enter at least 25 characters so we can understand your feedback*' : undefined}
                   >
                     <Textarea
@@ -220,6 +260,7 @@ export default function FinalReasonStep({
                       placeholder="Enter reason here..."
                       rows={5}
                       helperText={`Min 25 characters (${detailLen}/25)`}
+                      className={showTextError ? 'textarea--error' : ''}
                     />
                   </FormField>
                 )}
@@ -227,11 +268,11 @@ export default function FinalReasonStep({
                 {/* Price follow-up */}
                 {needsPrice && (
                   <FormField
-                    label={current?.prompt || ''}
+                    label=""
                     error={showPriceError ? 'Please enter a positive number.' : undefined}
                   >
                     <div className="relative">
-                      <span className="pointer-events-none absolute left-3 top-2.5 text-sm text-gray-500">
+                      <span className="pointer-events-none absolute left-3 top-2-5 text-sm text-gray-500">
                         $
                       </span>
                       <TextInput
@@ -239,42 +280,42 @@ export default function FinalReasonStep({
                         onChange={e => setPrice(e.target.value)}
                         inputMode="decimal"
                         placeholder="$"
-                        className="pl-7"
+                        className={`pl-7 ${showPriceError ? 'input--error' : ''}`}
                       />
                     </div>
                   </FormField>
                 )}
+
+                {/* Divider */}
+                <div className="divider" />
+
+                {/* CTA buttons */}
+                <div className="space-y-3">
+                  <Button
+                    onClick={() => console.log('Offer CTA')}
+                    variant="success"
+                    fullWidth
+                    size="lg"
+                  >
+                    Get 50% off | $12.50 <span className="opacity-80 line-through ml-1">$25</span>
+                  </Button>
+
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={!allValid}
+                    variant="danger"
+                    fullWidth
+                    size="lg"
+                  >
+                    Complete cancellation
+                  </Button>
+                </div>
               </>
             )}
-
-            {/* Divider */}
-            <div className="divider" />
-
-            {/* CTA buttons */}
-            <div className="space-y-3">
-              <Button
-                onClick={() => console.log('Offer CTA')}
-                variant="success"
-                fullWidth
-                size="lg"
-              >
-                Get 50% off | $12.50 <span className="opacity-80 line-through ml-1">$25</span>
-              </Button>
-
-              <Button
-                onClick={handleSubmit}
-                disabled={!allValid}
-                variant="danger"
-                fullWidth
-                size="lg"
-              >
-                Complete cancellation
-              </Button>
-            </div>
           </div>
 
-          {/* Right image */}
-          <div className="image-container">
+          {/* Right image - Desktop only */}
+          <div className="hidden sm:block image-container">
             <img
               src={imageUrl}
               alt="NYC skyline"

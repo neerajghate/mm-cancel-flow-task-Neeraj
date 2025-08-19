@@ -5,52 +5,62 @@ import { Button, ModalHeader, ModalBody } from './ui';
 
 type CancelCompleteStepProps = {
   onJobs: () => void;
-  onClose: () => void;
+  onClose?: () => void;
   endDate: string;
-  sawDownsell?: boolean; // Whether user saw the downsell step (affects step counting)
 };
 
 export default function CancelCompleteStep({
   onJobs,
   onClose,
-  endDate,
-  sawDownsell = false,
+  endDate
 }: CancelCompleteStepProps) {
   return (
     <div className="modal-panel">
-      {/* Header */}
-      <ModalHeader onClose={onClose}>
-        <div className="flex items-center gap-3">
-          <div className="section-title">
-            Subscription Cancelled
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="step-text">
-              {sawDownsell ? 'Step 4 of 4' : 'Step 3 of 3'}
-            </span>
-            <div className="flex gap-1">
-              {sawDownsell ? (
-                // 4 steps: Initial -> Downsell -> Reason -> Final Reason -> Done
-                <>
-                  <div className="progress-pill--step"></div>
-                  <div className="progress-pill--step"></div>
-                  <div className="progress-pill--step"></div>
-                  <div className="progress-pill--step"></div>
-                </>
-              ) : (
-                // 3 steps: Initial -> Reason -> Final Reason -> Done
-                <>
-                  <div className="progress-pill--step"></div>
-                  <div className="progress-pill--step"></div>
-                  <div className="progress-pill--step"></div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </ModalHeader>
+             {/* Header: responsive layout - mobile: title+progress left, desktop: original layout */}
+       <ModalHeader onClose={onClose}>
+         <div className="flex items-center w-full">
+           {/* Mobile: title and progress stacked on left */}
+           <div className="flex flex-col gap-2 sm:hidden">
+             <div className="section-title text-left">Subscription Cancelled</div>
+             <div className="flex items-center gap-2">
+               <div className="flex gap-1">
+                 <div className="w-4 h-1.5 bg-green-500 rounded-full"></div>
+                 <div className="w-4 h-1.5 bg-green-500 rounded-full"></div>
+                 <div className="w-4 h-1.5 bg-green-500 rounded-full"></div>
+               </div>
+               <div className="text-xs text-gray-600">Step 3 of 3</div>
+             </div>
+           </div>
 
-      {/* Body */}
+           {/* Desktop: original layout */}
+           <div className="hidden sm:flex items-center w-full">
+             <div className="flex items-center gap-3 mx-auto">
+               <div className="section-title">Subscription Cancelled</div>
+               <div className="flex items-center gap-2">
+                 <span className="step-text">Step 3 of 3</span>
+                 <div className="flex gap-1">
+                   <div className="progress-pill--step"></div>
+                   <div className="progress-pill--step"></div>
+                   <div className="progress-pill--step"></div>
+                 </div>
+               </div>
+             </div>
+           </div>
+         </div>
+               </ModalHeader>
+
+       {/* NYC Image below header - Mobile only */}
+       <div className="px-6 py-4 sm:hidden">
+         <div className="image-container image-container--small">
+           <img
+             src="/nyc.jpg"
+             alt="NYC skyline"
+             className="h-full w-full object-cover"
+           />
+         </div>
+       </div>
+
+       {/* Body */}
       <ModalBody>
         <div className="content-grid">
           {/* Left: copy + actions */}
@@ -82,8 +92,8 @@ export default function CancelCompleteStep({
             </div>
           </div>
 
-          {/* Right: image */}
-          <div className="image-container">
+                   {/* Right: image - Desktop only */}
+         <div className="hidden sm:block image-container">
             <img
               src="/nyc.jpg"
               alt="NYC skyline"

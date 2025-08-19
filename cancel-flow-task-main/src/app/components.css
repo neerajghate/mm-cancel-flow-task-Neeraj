@@ -29,23 +29,27 @@
 	.modal--xl { @apply max-w-4xl; }
 	.modal--full { @apply max-w-full mx-2 sm:mx-4; }
 
-	.modal-header { @apply flex items-center justify-between px-3 sm:px-4 py-3 border-b border-gray-100; }
+	.modal-header { @apply flex items-center justify-start px-6 py-2 border-b border-gray-200; }
 	.modal-body { @apply px-3 sm:px-6 py-4 sm:py-6; }
 	.modal-footer { @apply px-3 sm:px-4 py-3 border-t border-gray-100 flex items-center justify-end gap-3; }
 
-	.icon-button { @apply rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors; }
-	.modal-close-button { @apply absolute right-3 sm:right-4 top-3 sm:top-4 z-[110] rounded-full p-2 text-gray-500 hover:bg-white/70 hover:text-gray-700; }
+	.icon-button { @apply rounded-full p-2 text-gray-500 hover:bg-gray-500 hover:text-gray-700 transition-colors; }
+	.modal-close-button { @apply absolute right-3 sm:right-4 top-3 sm:top-4 z-[110] rounded-full p-2 text-gray-700 hover:bg-white/70 hover:text-gray-900; }
+	.modal-close-button--header { @apply ml-auto rounded-full p-2 text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors duration-200 cursor-pointer; }
+	
+	/* Visa question text styling */
+	.visa-question-text { @apply text-base font-medium text-gray-800 leading-relaxed; }
 
 	/* Card */
 	.card { @apply bg-white; }
 	.card-header { @apply pb-4; }
 	.card-header--border { @apply border-b border-gray-200; }
-	.card-body { @apply py-4; }
+	.card-body { @apply py-3; }
 	.card-footer { @apply pt-4; }
 	.card-footer--border { @apply border-t border-gray-200; }
 
 	/* Info Card */
-	.info-card { @apply flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200; }
+	.info-card { @apply p-4 bg-gray-50 rounded-lg border border-gray-200; }
 	.badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium border; }
 	.badge--success { @apply bg-green-50 text-green-700 border-green-200; }
 	.badge--warning { @apply bg-yellow-50 text-yellow-700 border-yellow-200; }
@@ -58,11 +62,14 @@
 	.form-required { @apply text-red-500 ml-1; }
 	.form-error { @apply text-xs text-red-600; }
 	.form-helper { @apply text-xs text-gray-500; }
-	.input { @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7c5cff] focus:border-transparent; }
-	.textarea { @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7c5cff] focus:border-transparent resize-none; }
+	.input { @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7c5cff] focus:border-transparent text-gray-900 placeholder-gray-500; }
+	.input--error { @apply border-red-500 focus:ring-red-500; }
+	.textarea { @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7c5cff] focus:border-transparent resize-none text-gray-900 placeholder-gray-500; }
+	.textarea--error { @apply border-red-500 focus:ring-red-500; }
 	.pill { @apply h-10 rounded-xl text-sm border shadow-sm transition-all duration-200; }
 	.pill--active { @apply text-white bg-[#7c5cff] border-[#7c5cff]; }
 	.pill--inactive { @apply text-gray-700 bg-gray-100 border-gray-200 hover:bg-gray-200; }
+	.pill--error { @apply border-red-500 bg-red-50 text-red-700; }
 
 	/* Progress */
 	.progress { @apply flex items-center gap-3; }
@@ -88,13 +95,14 @@
 	.step-description { @apply text-xs text-gray-400 mt-1; }
 
 	/* Page-specific helpers */
-	.page-container { @apply min-h-screen bg-gray-50 py-12 relative; }
-	.page-header { @apply px-6 py-8 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-indigo-50; }
+	.page-container { @apply min-h-screen bg-gray-50 py-8 relative; }
+	.page-header { @apply px-4 sm:px-6 py-4 sm:py-6 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-indigo-50; }
 
 	/* Layout Components */
-	.modal-panel { @apply relative w-full max-w-4xl rounded-2xl bg-white shadow-2xl; }
-	.modal-panel--large { @apply max-w-4xl; }
-	.modal-panel--medium { @apply max-w-2xl; }
+    .modal-panel { @apply relative w-full max-w-5xl rounded-2xl bg-white shadow-2xl; }
+    .modal-panel--large { @apply max-w-5xl; }
+    .modal-panel--medium { @apply max-w-2xl; }
+    .modal-panel--small { @apply max-w-xl; }
 	
 	.content-grid { @apply grid grid-cols-1 gap-4 sm:gap-6; }
 	.content-grid--compact { @apply gap-3 sm:gap-4; }
@@ -104,7 +112,7 @@
 		.content-grid { @apply grid-cols-2; }
 	}
 	
-	.image-container { @apply overflow-hidden rounded-2xl hidden sm:block; }
+	.image-container { @apply overflow-hidden rounded-2xl; }
 	.image-container--small { @apply rounded-xl; }
 	
 	/* Typography */
@@ -117,7 +125,7 @@
 	.text-muted { @apply text-sm text-gray-500 leading-relaxed; }
 	.text-muted--large { @apply text-sm sm:text-base text-gray-500 leading-relaxed; }
 	.text-body--large { @apply text-lg font-medium; }
-	.section-title { @apply text-sm font-semibold text-gray-900; }
+	.section-title { @apply text-base font-semibold text-gray-900; }
 	.step-text { @apply text-sm text-gray-600; }
 	.job-title { @apply text-base font-semibold text-gray-900; }
 	.job-meta { @apply text-sm text-gray-500; }
@@ -182,7 +190,7 @@
 	.responsive-gap { @apply gap-2 sm:gap-3; }
 
 	/* Page Layout and Container */
-	.page-layout { @apply max-w-3xl mx-auto px-4 sm:px-6 lg:px-8; }
+	.page-layout { @apply max-w-2xl mx-auto px-4 sm:px-6 lg:px-8; }
 	.page-title { @apply text-2xl font-bold text-gray-900; }
 	.page-title--mobile { @apply sm:hidden; }
 	.page-title--desktop { @apply hidden sm:inline; }
@@ -204,8 +212,8 @@
 	.loading-skeleton--input-delay-2 { @apply delay-150; }
 	
 	/* Header Layout */
-	.header-container { @apply flex items-center justify-between; }
-	.header-actions { @apply flex space-x-3; }
+	.header-container { @apply flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4; }
+	.header-actions { @apply flex flex-col sm:flex-row gap-3 sm:space-x-3 w-full sm:w-auto; }
 	
 	/* Account Information */
 	.account-section { @apply space-y-3; }
@@ -230,12 +238,77 @@
 	
 	/* Utility Classes */
 	.overflow-hidden { @apply overflow-hidden; }
+	.flex { @apply flex; }
+	.items-center { @apply items-center; }
+	.w-full { @apply w-full; }
+	.h-full { @apply h-full; }
+	.object-cover { @apply object-cover; }
+	.italic { @apply italic; }
+	.sm-pr-6 { @apply sm:pr-6; }
+	.space-y-3 { @apply space-y-3; }
+	.gap-3 { @apply gap-3; }
+	.gap-2 { @apply gap-2; }
+	.gap-1 { @apply gap-1; }
+	.sm-pr-4 { @apply sm:pr-4; }
+	.sm-space-y-4 { @apply sm:space-y-4; }
+	.mb-3 { @apply mb-3; }
+	.sm-mb-4 { @apply sm:mb-4; }
+	.mb-2 { @apply mb-2; }
+	.mt-4 { @apply mt-4; }
+	.sm-mt-5 { @apply sm:mt-5; }
+	.h-40 { @apply h-40; }
+	.mt-2 { @apply mt-2; }
+	.mt-3 { @apply mt-3; }
+	.inline-flex { @apply inline-flex; }
+	.rounded-full { @apply rounded-full; }
+	.bg-blue-50 { @apply bg-blue-50; }
+	.px-3 { @apply px-3; }
+	.py-1 { @apply py-1; }
+	.text-xs { @apply text-xs; }
+	.font-medium { @apply font-medium; }
+	.text-blue-700 { @apply text-blue-700; }
+	.h-3 { @apply h-3; }
+	.w-3 { @apply w-3; }
+	.text-center { @apply text-center; }
+	.hidden { @apply hidden; }
+	.sm-block { @apply sm:block; }
+	.opacity-80 { @apply opacity-80; }
+	.line-through { @apply line-through; }
+	.ml-1 { @apply ml-1; }
+	.rounded-xl { @apply rounded-xl; }
+	.bg-white { @apply bg-white; }
+	.px-4 { @apply px-4; }
+	.py-3 { @apply py-3; }
+	.text-left { @apply text-left; }
+	.text-gray-800 { @apply text-gray-800; }
+	.hover-bg-gray-50 { @apply hover:bg-gray-50; }
+	.border-gray-400 { @apply border-gray-400; }
+	.border-gray-200 { @apply border-gray-200; }
+	.border-gray-800 { @apply border-gray-800; }
+	.h-2-5 { @apply h-2.5; }
+	.w-2-5 { @apply w-2.5; }
+	.bg-gray-900 { @apply bg-gray-900; }
+	.bg-transparent { @apply bg-transparent; }
+	.text-sm { @apply text-sm; }
+	.mb-4 { @apply mb-4; }
+	.relative { @apply relative; }
+	.pointer-events-none { @apply pointer-events-none; }
+	.absolute { @apply absolute; }
+	.left-3 { @apply left-3; }
+	.top-2-5 { @apply top-2.5; }
+	.text-gray-500 { @apply text-gray-500; }
+	.pl-7 { @apply pl-7; }
+	.rounded-2xl { @apply rounded-2xl; }
+	.shadow-sm { @apply shadow-sm; }
+	.p-5 { @apply p-5; }
+	.items-start { @apply items-start; }
+	.justify-between { @apply justify-between; }
+	.flex-wrap { @apply flex-wrap; }
 	.rounded-lg { @apply rounded-lg; }
 	.border-gray-200 { @apply border-gray-200; }
 	.bg-gray-50 { @apply bg-gray-50; }
 	.p-4 { @apply p-4; }
 	.space-y-4 { @apply space-y-4; }
-	.space-y-3 { @apply space-y-3; }
 	.space-y-6 { @apply space-y-6; }
 	.mb-4 { @apply mb-4; }
 	.mb-2 { @apply mb-2; }

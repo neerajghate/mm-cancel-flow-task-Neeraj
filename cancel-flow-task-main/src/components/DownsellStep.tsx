@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button, ModalHeader, ModalBody } from './ui';
-import { AB_TESTING_CONFIG } from '../constants/config';
+import { AB_TESTING_CONFIG } from '../config/constants';
 
 type DownsellStepProps = {
   onBack: () => void;
@@ -28,13 +28,27 @@ export default function DownsellStep({
   
   return (
     <div className="modal-panel">
-      {/* Header */}
-      <ModalHeader onClose={onClose}>
-        <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-3">
-                         <button
+             {/* Header: responsive layout - mobile: title+progress left, desktop: original layout */}
+       <ModalHeader onClose={onClose}>
+         <div className="flex items-center w-full">
+           {/* Mobile: title and progress stacked on left */}
+           <div className="flex flex-col gap-2 sm:hidden">
+             <div className="section-title text-left">Subscription Cancellation</div>
+             <div className="flex items-center gap-2">
+               <div className="flex gap-1">
+                 <div className="w-4 h-1.5 bg-green-500 rounded-full"></div>
+                 <div className="w-4 h-1.5 bg-gray-300 rounded-full"></div>
+                 <div className="w-4 h-1.5 bg-gray-300 rounded-full"></div>
+               </div>
+               <div className="text-xs text-gray-600">Step 1 of 3</div>
+             </div>
+           </div>
+
+           {/* Desktop: original layout with back button in header */}
+           <div className="hidden sm:flex items-center w-full">
+             <button
                onClick={onBack}
-               className="back-link"
+               className="back-link flex items-center gap-2"
                aria-label="Go back"
              >
                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -42,21 +56,35 @@ export default function DownsellStep({
                </svg>
                Back
              </button>
-            <div className="section-title">Subscription Cancellation</div>
-          </div>
-          
-          {/* Progress Indicator - Downsell affects step counting */}
-          <div className="flex items-center gap-2">
-            <span className="step-text">Step 2 of 4</span>
-            <div className="flex gap-1">
-              <div className="progress-pill--step"></div>
-              <div className="progress-pill--step"></div>
-              <div className="progress-pill--step--inactive"></div>
-              <div className="progress-pill--step--inactive"></div>
-            </div>
-          </div>
-        </div>
-      </ModalHeader>
+
+             <div className="flex items-center gap-3 mx-auto">
+               <div className="section-title">Subscription Cancellation</div>
+               <div className="flex items-center gap-2">
+                 <span className="step-text">Step 1 of 3</span>
+                 <div className="flex gap-1">
+                   <div className="progress-pill--step"></div>
+                   <div className="progress-pill--step--inactive"></div>
+                   <div className="progress-pill--step--inactive"></div>
+                 </div>
+               </div>
+             </div>
+           </div>
+         </div>
+       </ModalHeader>
+
+       {/* Mobile: Back button below header */}
+       <div className="sm:hidden px-6 py-3 border-b border-gray-100">
+         <button
+           onClick={onBack}
+           className="back-link flex items-center gap-2"
+           aria-label="Go back"
+         >
+           <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+           </svg>
+           <span className="text-sm font-medium">Back</span>
+         </button>
+       </div>
 
       {/* Body */}
       <ModalBody>
@@ -117,8 +145,8 @@ export default function DownsellStep({
             </p>
           </div>
 
-          {/* Right: image */}
-          <div className="image-container">
+          {/* Right: image - Desktop only */}
+          <div className="hidden sm:block image-container">
             <img
               src="/nyc.jpg"
               alt="NYC skyline"

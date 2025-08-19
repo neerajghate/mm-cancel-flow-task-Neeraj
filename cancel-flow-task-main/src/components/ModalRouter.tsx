@@ -20,7 +20,6 @@ interface ModalRouterProps {
   modalStage: ModalStage;
   foundJobData: FoundJobData;
   mockSubscriptionData: SubscriptionData | null;
-  sawDownsellThisSession: boolean; // Whether user saw the downsell step
   abBucket: 'A' | 'B'; // A/B test variant
   onClose: () => void;
   onFoundJob: () => void;
@@ -31,6 +30,7 @@ interface ModalRouterProps {
   onFoundJobFinish: () => void;
   onDownsellAccept: () => Promise<void>;
   onDownsellDecline: () => void;
+  onDownsellBack: () => void;
   onRolesContinue: () => void;
   onReasonNext: () => void;
   onReasonBack: () => void;
@@ -43,7 +43,6 @@ export default function ModalRouter({
   modalStage,
   foundJobData,
   mockSubscriptionData,
-  sawDownsellThisSession,
   abBucket,
   onClose,
   onFoundJob,
@@ -54,6 +53,7 @@ export default function ModalRouter({
   onFoundJobFinish,
   onDownsellAccept,
   onDownsellDecline,
+  onDownsellBack,
   onRolesContinue,
   onReasonNext,
   onReasonBack,
@@ -104,12 +104,14 @@ export default function ModalRouter({
         onBack={() => onFoundJobBack('foundJob2')}
         onComplete={onFoundJobComplete}
         onClose={onClose}
+        foundJobData={foundJobData}
       />
     ) : (
       <FoundJobVisaNoStep
         onBack={() => onFoundJobBack('foundJob2')}
         onComplete={onFoundJobComplete}
         onClose={onClose}
+        foundJobData={foundJobData}
       />
     );
   }
@@ -128,7 +130,7 @@ export default function ModalRouter({
   if (modalStage === 'downsell') {
     return (
       <DownsellStep
-        onBack={onReasonBack}
+        onBack={onDownsellBack}
         onAccept={onDownsellAccept}
         onDecline={onDownsellDecline}
         onClose={onClose}
@@ -154,7 +156,6 @@ export default function ModalRouter({
         onBack={onReasonBack}
         onNext={onReasonNext}
         onClose={onClose}
-        sawDownsell={sawDownsellThisSession}
       />
     );
   }
@@ -165,7 +166,6 @@ export default function ModalRouter({
         onBack={onFinalReasonBack}
         onComplete={onFinalReasonComplete}
         onClose={onClose}
-        sawDownsell={sawDownsellThisSession}
       />
     );
   }
@@ -184,7 +184,6 @@ export default function ModalRouter({
               })
             : 'XX date'
         }
-        sawDownsell={sawDownsellThisSession}
       />
     );
   }

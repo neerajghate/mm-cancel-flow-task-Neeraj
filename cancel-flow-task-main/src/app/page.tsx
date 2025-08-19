@@ -15,7 +15,6 @@ export default function ProfilePage() {
     foundJobData,
     mockUser,
     mockSubscriptionData,
-    sawDownsellThisSession,
     abBucket,
     
     // Actions
@@ -30,6 +29,7 @@ export default function ProfilePage() {
     handleFoundJobComplete,
     handleDownsellAccept,
     handleDownsellDecline,
+    handleDownsellBack,
     handleRolesContinue,
     handleReasonNext,
     handleReasonBack,
@@ -89,16 +89,27 @@ export default function ProfilePage() {
               </div>
               <div className="account-field--spaced">
                 <InfoCard
-                  icon="💳"
-                  title="Subscription Status"
-                  value={mockSubscriptionData?.status || 'Loading...'}
+                                     icon={
+                     <svg xmlns="http://www.w3.org/2000/svg" className="icon text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                     </svg>
+                   }
+                  title="Subscription status"
+                  value=""
                   status={mockSubscriptionData?.status === 'active' ? 'success' : 'warning'}
+                  showStatusText={true}
                 />
                 <InfoCard
-                  icon="📅"
-                  title="Next Payment"
-                  value={mockSubscriptionData ? new Date(mockSubscriptionData.currentPeriodEnd).toLocaleDateString() : 'Loading...'}
-                  status="info"
+                                     icon={
+                     <svg xmlns="http://www.w3.org/2000/svg" className="icon text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                     </svg>
+                   }
+                  title="Next payment"
+                  value={mockSubscriptionData ? new Date(mockSubscriptionData.currentPeriodEnd).toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric'
+                  }) : 'Loading...'}
                 />
               </div>
             </div>
@@ -218,7 +229,6 @@ export default function ProfilePage() {
             modalStage={modalStage}
             foundJobData={foundJobData}
             mockSubscriptionData={mockSubscriptionData}
-            sawDownsellThisSession={sawDownsellThisSession}
             abBucket={abBucket}
             onClose={closeCancelFlow}
             onFoundJob={handleFoundJob}
@@ -229,6 +239,7 @@ export default function ProfilePage() {
             onFoundJobFinish={handleFoundJobFinish}
             onDownsellAccept={handleDownsellAccept}
             onDownsellDecline={handleDownsellDecline}
+            onDownsellBack={handleDownsellBack}
             onRolesContinue={handleRolesContinue}
             onReasonNext={handleReasonNext}
             onReasonBack={handleReasonBack}

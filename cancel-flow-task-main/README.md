@@ -1,243 +1,211 @@
-# Migrate Mate Cancellation Flow
+# 🔐 Secure Database with localStorage Persistence
 
-A comprehensive cancellation flow application with A/B testing, local database persistence, and security features.
-
-## 🚀 Quick Start
-
-```bash
-npm install
-npm run db:setup
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+A Next.js application demonstrating a secure, persistent database implementation using localStorage with encryption, Row Level Security (RLS), and comprehensive security features.
 
 ## ✨ Features
 
-### 🧪 A/B Testing
-- **Deterministic A/B (50/50)**: Users are assigned to variant A or B on first entry
-- **Variant A**: Sees downsell offer (50% off)
-- **Variant B**: Skips downsell ($10 off instead)
-- **Persistent Assignment**: Bucket assignment persists across sessions
+- **🔐 Secure Database**: In-memory database with localStorage persistence
+- **🛡️ Row Level Security (RLS)**: Users can only access their own data
+- **🔒 CSRF Protection**: Built-in CSRF token validation
+- **✅ Input Validation**: Zod schema validation for all inputs
+- **🔐 Data Encryption**: localStorage data is encrypted at rest
+- **📊 A/B Testing**: Deterministic but secure A/B variant assignment
+- **🔄 Data Persistence**: Data survives page refreshes and browser sessions
+- **🚀 Progressive Flow**: Multi-step cancellation flow with state management
 
-### 💾 Local Database
-- **Browser Storage**: Data persists in localStorage between sessions
-- **Server Memory**: Fallback storage for server-side operations
-- **Sample Data**: Pre-seeded with 3 users and active subscriptions
-- **No External Dependencies**: Works offline without configuration
-
-### 🔒 Security Features
-- **Input Validation**: Zod-based schema validation
-- **XSS Prevention**: HTML escaping and sanitization
-- **CSRF Protection**: Token-based request validation
-- **Rate Limiting**: Request throttling by IP
-- **Security Headers**: Comprehensive HTTP security headers
-
-### 📱 User Experience
-- **Mobile Responsive**: Optimized for all device sizes
-- **Progress Tracking**: Visual step indicators
-- **Error Handling**: Comprehensive validation and error states
-- **Accessibility**: ARIA labels and keyboard navigation
-
-## 🗄️ Database Schema
-
-### Users Table
-```typescript
-interface User {
-  id: string;
-  email: string;
-  created_at: string;
-}
-```
-
-### Subscriptions Table
-```typescript
-interface Subscription {
-  id: string;
-  user_id: string;
-  monthly_price: number;
-  status: 'active' | 'pending_cancellation' | 'cancelled';
-  created_at: string;
-  updated_at: string;
-}
-```
-
-### Cancellations Table
-```typescript
-interface Cancellation {
-  id: string;
-  user_id: string;
-  subscription_id: string;
-  downsell_variant: 'A' | 'B';
-  reason?: string;
-  accepted_downsell: boolean;
-  created_at: string;
-}
-```
-
-## 🔄 A/B Testing Flow
-
-1. **User Entry**: First-time users get randomly assigned to bucket A or B
-2. **Variant A (50%)**: Sees downsell offer with 50% discount
-3. **Variant B (50%)**: Skips downsell, goes directly to reason collection
-4. **Persistence**: Assignment stored locally and reused on return visits
-5. **Analytics**: All A/B interactions tracked for analysis
-
-## 🛠️ Development
+## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js 18+ 
 - npm or yarn
 
-### Setup
-```bash
-# Install dependencies
-npm install
+### Installation
 
-# Setup local database with sample data
-npm run db:setup
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd cancel-flow-task-main
+   ```
 
-# Start development server
-npm run dev
-```
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-### Available Scripts
+3. **Set up the database**
+   ```bash
+   npm run db:setup
+   ```
+   This will create a `database-setup.html` file. Open it in your browser and click "Initialize Database" to set up localStorage.
+
+4. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open your browser**
+   Navigate to `http://localhost:3000` (or the port shown in your terminal)
+
+## 📋 Available Scripts
+
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
-- `npm run db:setup` - Initialize local database
+- `npm run db:setup` - Initialize localStorage database
+- `npm run test:security` - Test security implementation
 
-### Project Structure
+## 🏗️ Architecture
+
+### Database Layer
+- **`SecureDatabase`**: Main database class with RLS policies
+- **`RLSPolicies`**: Row Level Security enforcement
+- **`PersistenceLayer`**: Interface for data persistence
+- **`LocalStoragePersistence`**: localStorage implementation with encryption
+
+### Security Features
+- **Row Level Security**: Users can only access their own data
+- **CSRF Protection**: Token-based CSRF prevention
+- **Input Validation**: Zod schema validation
+- **Data Encryption**: XOR encryption for localStorage data
+- **Secure RNG**: Crypto API for A/B testing and token generation
+
+### Data Models
+- **User**: Basic user information
+- **Subscription**: User subscription details
+- **Cancellation**: Cancellation flow data with A/B variants
+
+## 🔧 Database Setup Process
+
+1. **Run `npm run db:setup`**
+   - Verifies project structure
+   - Creates `database-setup.html` setup page
+
+2. **Open `database-setup.html` in browser**
+   - Click "Initialize Database" to create seed data
+   - Data is encrypted and stored in localStorage
+   - Check status to verify setup
+
+3. **Start application**
+   - App automatically loads from localStorage
+   - Falls back to seed data if localStorage is empty
+
+## 📊 Data Persistence
+
+### What Gets Stored
+- **Users**: Email, ID, timestamps
+- **Subscriptions**: Status, pricing, user association
+- **Cancellations**: Flow data, A/B variants, reasons
+- **CSRF Tokens**: Security tokens with expiration
+
+### Storage Location
+- **Browser**: localStorage (encrypted)
+- **Scope**: Per-browser, per-domain
+- **Persistence**: Survives page refreshes and browser sessions
+
+### Data Migration
+- Automatic version checking
+- Graceful fallback to seed data
+- Migration support for schema changes
+
+## 🛡️ Security Implementation
+
+### Row Level Security (RLS)
+```typescript
+// Users can only access their own data
+static canAccessUser(userId: string, context: RLSContext): boolean {
+  return context.is_authenticated && context.current_user_id === userId;
+}
+```
+
+### CSRF Protection
+- Token generation on session start
+- Validation on all state-changing operations
+- Automatic token expiration (24 hours)
+
+### Input Validation
+- Zod schemas for all data types
+- Sanitization to prevent XSS
+- Length and type validation
+
+## 🔄 A/B Testing
+
+### Implementation
+- Deterministic but secure variant assignment
+- Uses crypto API for randomness
+- Fallback to hash-based assignment
+- Persistent across sessions
+
+### Variants
+- **Bucket A**: Sees downsell offers
+- **Bucket B**: Skips downsell (direct to cancellation)
+
+## 📁 Project Structure
+
 ```
 src/
-├── app/                 # Next.js app directory
-├── components/          # React components
-├── hooks/              # Custom React hooks
-├── lib/                # Utility libraries
-├── services/           # Business logic services
-└── constants/          # Configuration constants
+├── lib/
+│   ├── database.ts          # Secure database implementation
+│   ├── persistence.ts       # localStorage persistence layer
+│   ├── validation.ts        # Input validation schemas
+│   └── userSession.ts       # User session management
+├── components/               # React components
+├── hooks/                   # Custom React hooks
+└── app/                     # Next.js app router
+scripts/
+└── setup-database.js        # Database setup script
 ```
 
-## 🔍 Testing
+## 🧪 Testing
 
-### Local Database Testing
+### Security Testing
 ```bash
-npm run db:setup
+npm run test:security
 ```
-
-This will:
-- Initialize sample data (3 users, 3 subscriptions)
-- Test A/B testing functionality
-- Verify database operations
-- Confirm all features are working
+Tests for:
+- RLS policies implementation
+- CSRF token generation/validation
+- Input validation schemas
+- Data sanitization functions
 
 ### Manual Testing
-1. Open the application in your browser
-2. Click "Cancel Subscription" to start the flow
-3. Test both "Yes, I found a job" and "Not yet" paths
-4. Verify A/B testing works (check console for bucket assignment)
-5. Complete the cancellation flow
-6. Refresh the page to verify data persistence
+1. **Data Persistence**: Refresh page, verify data remains
+2. **Security**: Check browser dev tools for encrypted localStorage
+3. **Flow**: Complete cancellation flow, verify state persistence
 
-## 📊 Monitoring
-
-### Console Logging
-- A/B test assignments and interactions
-- Database operations (create, read, update)
-- User actions and form submissions
-- Error handling and validation
-
-### Data Inspection
-- Check browser localStorage for persistent data
-- Monitor network requests (minimal, local only)
-- Review console logs for debugging
-
-## 🚀 Production Deployment
-
-### Environment Variables
-No external environment variables required for local database mode.
-
-### Build Process
-```bash
-npm run build
-npm run start
-```
-
-### Data Persistence
-- **Development**: localStorage in browser
-- **Production**: Can be easily migrated to real database
-- **Migration**: DatabaseService abstracts storage layer
-
-## 🔧 Customization
-
-### A/B Testing Configuration
-Edit `src/constants/config.ts` to modify:
-- Distribution percentages
-- Pricing variants
-- Test parameters
-
-### Database Schema
-Modify `src/lib/localDb.ts` to add:
-- New tables
-- Additional fields
-- Sample data
-
-### Security Settings
-Adjust `src/lib/security.ts` for:
-- Rate limiting thresholds
-- Validation rules
-- Security headers
-
-## 🐛 Troubleshooting
+## 🚨 Troubleshooting
 
 ### Common Issues
-1. **Data not persisting**: Check browser localStorage support
-2. **A/B testing not working**: Clear localStorage and refresh
-3. **Build errors**: Ensure all dependencies are installed
 
-### Reset Database
-```bash
-# Clear all local data
-npm run db:setup
-```
+**"Database not initialized"**
+- Run `npm run db:setup`
+- Open `database-setup.html` and click "Initialize Database"
+
+**"localStorage not available"**
+- Ensure you're running in a browser (not SSR)
+- Check if localStorage is enabled in your browser
+
+**"Data not persisting"**
+- Verify localStorage is working in browser dev tools
+- Check console for encryption/decryption errors
 
 ### Debug Mode
-Check browser console for:
-- Database operations
-- A/B test assignments
-- Error messages
-- Validation results
+- Check browser console for detailed logging
+- Use `database-setup.html` to inspect localStorage state
+- Verify encryption keys match between setup and app
 
-## 📈 Future Enhancements
+## 🔮 Future Enhancements
 
-### Database Migration
-The local database can be easily replaced with:
-- PostgreSQL/MySQL
-- MongoDB
-- Supabase/Firebase
-- Custom API endpoints
+- **Backend Integration**: Replace localStorage with real database
+- **Multi-User Support**: Extend RLS for multiple users
+- **Advanced Encryption**: Use proper encryption libraries
+- **Data Sync**: Cloud synchronization for cross-device access
+- **Audit Logging**: Track all data access and modifications
 
-### Analytics Integration
-- Google Analytics
-- Mixpanel
-- Custom tracking
-- A/B test results
+## 📝 License
 
-### Performance Optimization
-- Image optimization
-- Code splitting
-- Caching strategies
-- Bundle optimization
+This project is for assessment purposes. Please refer to your assignment requirements for usage guidelines.
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License.
+This is a take-home assessment project. Please follow the assignment guidelines for any modifications or improvements.

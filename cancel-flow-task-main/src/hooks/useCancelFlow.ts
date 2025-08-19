@@ -1,10 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { UserService, SubscriptionService, AnalyticsService } from '../services/userService';
-import { DatabaseService } from '../services/databaseService';
-import { AB_TESTING_CONFIG, BUSINESS_CONFIG, STORAGE_KEYS } from '../constants/config';
-import { validateInput, validationSchemas } from '../lib/security';
+import { AB_TESTING_CONFIG, BUSINESS_CONFIG, STORAGE_KEYS } from '../config/constants';
+import { userSession } from '../lib/userSession';
+import { validateInput, validationSchemas, sanitizeFoundJobData } from '../lib/validation';
 
 // Types
 export type ModalStage =
@@ -105,44 +104,45 @@ export function useCancelFlow() {
   useEffect(() => {
     const loadUserData = async () => {
       try {
-        const user = await UserService.getUserData();
-        const subscription = await UserService.getSubscriptionData();
+        console.log('Starting to load user data...');
+        
+        // Initialize secure session
+        console.log('Calling userSession.initializeSession()...');
+        const userId = userSession.initializeSession();
+        console.log('Session initialized with user ID:', userId);
+        
+        // Get user data from secure database
+        console.log('Getting user data...');
+        const user = await userSession.getUserData();
+        console.log('User data received:', user);
+        
+        console.log('Getting subscription data...');
+        const subscription = await userSession.getSubscriptionData();
+        console.log('Subscription data received:', subscription);
         
         setUserData(user);
         setSubscriptionData(subscription);
         
-        // Get or create A/B bucket from database
-        if (user?.id) {
-          try {
-            const bucket = await DatabaseService.getOrCreateABBucket(user.id);
-            setAbBucket(bucket);
-            
-            // Store in localStorage for frontend consistency
-            if (typeof window !== 'undefined') {
-              window.localStorage.setItem(STORAGE_KEYS.AB_TEST_BUCKET, bucket);
-            }
-            
-            AnalyticsService.trackABTest(bucket);
-            console.log(`A/B Test: User assigned to bucket ${bucket} from database`);
-          } catch (error) {
-            console.error('Failed to get A/B bucket from database, using localStorage fallback:', error);
-            
-            // Fallback to localStorage
-            const savedBucket = typeof window !== 'undefined' ? window.localStorage.getItem(STORAGE_KEYS.AB_TEST_BUCKET) : null;
-            
-            if (savedBucket === BUSINESS_CONFIG.AB_BUCKETS.A || savedBucket === BUSINESS_CONFIG.AB_BUCKETS.B) {
-              setAbBucket(savedBucket as ABBucket);
-              AnalyticsService.trackABTest(savedBucket as ABBucket);
-            } else {
-              const bucket: ABBucket = Math.random() < AB_TESTING_CONFIG.DEFAULT_DISTRIBUTION ? 'A' : 'B';
-              if (typeof window !== 'undefined') {
-                window.localStorage.setItem(STORAGE_KEYS.AB_TEST_BUCKET, bucket);
-              }
-              setAbBucket(bucket);
-              AnalyticsService.trackABTest(bucket);
-            }
-          }
+        // Get A/B bucket from secure database
+        console.log('Getting A/B bucket...');
+        const bucket = await userSession.getOrCreateABBucket();
+        console.log('A/B bucket received:', bucket);
+        setAbBucket(bucket);
+        
+        // Store in localStorage for frontend consistency
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem(STORAGE_KEYS.AB_TEST_BUCKET, bucket);
         }
+        
+        // Check if user has already seen downsell this session
+        console.log('Checking existing cancellations...');
+        const existingCancellation = await userSession.getCancellationByUserId();
+        if (existingCancellation) {
+          setSawDownsellThisSession(true);
+        }
+        
+        console.log(`A/B Test: User assigned to bucket ${bucket}`);
+        console.log('User data loading completed successfully');
       } catch (error) {
         console.error('Failed to load user data:', error);
       }
@@ -155,8 +155,9 @@ export function useCancelFlow() {
   const handleSignOut = async () => {
     try {
       setIsSigningOut(true);
-      await UserService.signOut();
-      AnalyticsService.trackAction('user_signed_out');
+      // Clear secure session
+      userSession.clearSession();
+      console.log('User signed out');
     } catch (error) {
       console.error('Sign out failed:', error);
     } finally {
@@ -165,7 +166,6 @@ export function useCancelFlow() {
   };
 
   const handleClose = () => {
-    AnalyticsService.trackAction('navigate_to_jobs');
     console.log('Navigate to jobs');
   };
 
@@ -173,7 +173,7 @@ export function useCancelFlow() {
   const handleFoundJob = () => {
     setFoundJobData({ foundWithMate: '' });
     setModalStage(BUSINESS_CONFIG.MODAL_STAGES.FOUND_JOB_1);
-    AnalyticsService.trackAction('found_job_selected');
+    console.log('Found job selected');
   };
 
   // RIGHT PATH: user clicked "Not yet"
@@ -184,13 +184,11 @@ export function useCancelFlow() {
       // Bucket A: Show downsell (50% of users)
       setSawDownsellThisSession(true);
       setModalStage(BUSINESS_CONFIG.MODAL_STAGES.DOWNSELL);
-      AnalyticsService.trackAction('downsell_shown', { bucket: abBucket });
       console.log('A/B Test: Showing downsell to user (Bucket A)');
     } else {
       // Bucket B: Skip downsell (50% of users)
       setSawDownsellThisSession(false);
       setModalStage(BUSINESS_CONFIG.MODAL_STAGES.REASON);
-      AnalyticsService.trackAction('downsell_skipped', { bucket: abBucket });
       console.log('A/B Test: Skipping downsell for user (Bucket B)');
     }
   };
@@ -201,12 +199,10 @@ export function useCancelFlow() {
     setSawDownsellThisSession(false);
     setFoundJobData({ foundWithMate: '' });
     
-    // Create cancellation record in database
-    if (userData?.id && subscriptionData) {
+    // Create cancellation record in secure database
+    if (userData?.id) {
       try {
-        const cancellationId = await DatabaseService.createCancellation({
-          user_id: userData.id,
-          subscription_id: subscriptionData.id || 'mock-subscription-id',
+        const cancellationId = await userSession.createCancellation({
           downsell_variant: abBucket,
           reason: 'Cancel flow opened',
           accepted_downsell: false
@@ -221,26 +217,26 @@ export function useCancelFlow() {
       }
     }
     
-    AnalyticsService.trackAction('cancel_flow_opened');
+    console.log('Cancel flow opened');
   };
 
   const closeCancelFlow = () => {
     setShowCancelModal(false);
     setCurrentCancellationId(null);
-    AnalyticsService.trackAction('cancel_flow_closed');
+    console.log('Cancel flow closed');
   };
 
   const handleFoundJobNext = (stage: ModalStage, payload?: FoundJobPayload) => {
     if (payload) {
       setFoundJobData((prev) => ({ ...prev, ...payload }));
-      AnalyticsService.trackAction('found_job_data_updated', payload);
+      console.log('Found job data updated:', payload);
     }
     setModalStage(stage);
   };
 
   const handleFoundJobBack = (stage: ModalStage) => {
     setModalStage(stage);
-    AnalyticsService.trackAction('found_job_navigation', { from: modalStage, to: stage });
+    console.log('Found job navigation:', { from: modalStage, to: stage });
   };
 
   const handleFoundJobComplete = async (payload: FoundJobPayload) => {
@@ -249,17 +245,33 @@ export function useCancelFlow() {
       setModalStage(BUSINESS_CONFIG.MODAL_STAGES.FOUND_JOB_DONE);
       
       // Track form completion
-      AnalyticsService.trackFormCompletion('found_job', payload);
+      console.log('Found job form completed:', payload);
       
-      // Save to database
+      // Save to secure database
       if (userData?.id) {
         try {
-          const recordId = await DatabaseService.createFoundJobRecord(userData.id, payload);
-          if (recordId) {
-            console.log('Saved found job record to database:', recordId);
+          // Sanitize input data
+          const sanitizedData = sanitizeFoundJobData(payload);
+          
+          // Validate data
+          const validation = validateInput(validationSchemas.foundJobData, sanitizedData);
+          if (!validation.success) {
+            console.error('Invalid found job data:', validation.errors);
+            return;
+          }
+          
+          // Create cancellation record with found job metadata
+          const cancellationId = await userSession.createCancellation({
+            downsell_variant: 'A', // Default for found job path
+            reason: `FOUND_JOB: ${sanitizedData.foundWithMate}`,
+            accepted_downsell: false
+          });
+          
+          if (cancellationId) {
+            console.log('Saved found job record to secure database:', cancellationId);
           }
         } catch (error) {
-          console.error('Failed to save found job record to database:', error);
+          console.error('Failed to save found job record to secure database:', error);
         }
       }
     } catch (error) {
@@ -269,15 +281,21 @@ export function useCancelFlow() {
 
   const handleDownsellAccept = async () => {
     try {
-      await SubscriptionService.acceptDownsellOffer();
+      // Accept downsell offer
+      console.log('Downsell offer accepted');
       
-      // Update database
+      // Update secure database
       if (currentCancellationId) {
-        await DatabaseService.updateCancellationDownsell(currentCancellationId, true);
+        try {
+          await userSession.updateCancellationDownsell(currentCancellationId, true);
+          console.log('Updated cancellation downsell to true in secure database');
+        } catch (error) {
+          console.error('Failed to update cancellation downsell:', error);
+        }
       }
       
       setModalStage(BUSINESS_CONFIG.MODAL_STAGES.ROLES);
-      AnalyticsService.trackAction('downsell_accepted');
+      console.log('Downsell accepted');
     } catch (error) {
       console.error('Failed to accept downsell offer:', error);
     }
@@ -285,32 +303,43 @@ export function useCancelFlow() {
 
   const handleDownsellDecline = async () => {
     try {
-      // Update database
+      // Update secure database
       if (currentCancellationId) {
-        await DatabaseService.updateCancellationDownsell(currentCancellationId, false);
+        try {
+          await userSession.updateCancellationDownsell(currentCancellationId, false);
+          console.log('Updated cancellation downsell to false in secure database');
+        } catch (error) {
+          console.error('Failed to update cancellation downsell:', error);
+        }
       }
       
       setModalStage(BUSINESS_CONFIG.MODAL_STAGES.REASON);
-      AnalyticsService.trackAction('downsell_declined');
+      console.log('Downsell declined');
     } catch (error) {
       console.error('Failed to decline downsell offer:', error);
     }
   };
 
+  // Back from downsell → go to initial
+  const handleDownsellBack = () => {
+    setModalStage(BUSINESS_CONFIG.MODAL_STAGES.INITIAL);
+    console.log('Downsell back clicked');
+  };
+
   const handleRolesContinue = () => {
     closeCancelFlow();
-    AnalyticsService.trackAction('roles_continue_clicked');
+    console.log('Roles continue clicked');
   };
 
   const handleReasonNext = () => {
     setModalStage(BUSINESS_CONFIG.MODAL_STAGES.FINAL_REASON);
-    AnalyticsService.trackAction('reason_next_clicked');
+    console.log('Reason next clicked');
   };
 
   const handleReasonBack = () => {
     const targetStage = sawDownsellThisSession ? BUSINESS_CONFIG.MODAL_STAGES.DOWNSELL : BUSINESS_CONFIG.MODAL_STAGES.INITIAL;
     setModalStage(targetStage);
-    AnalyticsService.trackAction('reason_back_clicked', { targetStage });
+    console.log('Reason back clicked:', { targetStage });
   };
 
   const handleFinalReasonComplete = async (payload: CancelReasonPayload) => {
@@ -324,16 +353,21 @@ export function useCancelFlow() {
         return;
       }
       
-      // Update database
+      // Update secure database
       if (currentCancellationId) {
-        await DatabaseService.updateCancellationReason(currentCancellationId, payload.reason);
+        try {
+          await userSession.updateCancellationReason(currentCancellationId, payload.reason);
+          console.log('Updated cancellation reason in secure database:', payload.reason);
+        } catch (error) {
+          console.error('Failed to update cancellation reason:', error);
+        }
       }
       
       // Mark subscription as pending cancellation
       if (userData?.id && subscriptionData?.id) {
         try {
-          await DatabaseService.updateSubscriptionStatus(subscriptionData.id, { status: 'pending_cancellation' });
-          console.log('Marked subscription as pending cancellation');
+          await userSession.updateSubscriptionStatus(subscriptionData.id, 'pending_cancellation');
+          console.log('Marked subscription as pending cancellation in secure database');
         } catch (error) {
           console.error('Failed to update subscription status:', error);
         }
@@ -341,8 +375,8 @@ export function useCancelFlow() {
       
       setModalStage(BUSINESS_CONFIG.MODAL_STAGES.DONE);
       
-      // Track form completion
-      AnalyticsService.trackFormCompletion('cancel_reason', payload);
+      // Mock form completion tracking
+      console.log('Cancel reason form completed:', payload);
     } catch (error) {
       console.error('Failed to complete cancel reason flow:', error);
     }
@@ -350,39 +384,35 @@ export function useCancelFlow() {
 
   const handleFinalReasonBack = () => {
     setModalStage(BUSINESS_CONFIG.MODAL_STAGES.REASON);
-    AnalyticsService.trackAction('final_reason_back_clicked');
+    console.log('Final reason back clicked');
   };
 
   const handleCancelComplete = () => {
     closeCancelFlow();
-    AnalyticsService.trackAction('cancel_complete_clicked');
+    console.log('Cancel complete clicked');
     console.log('Back to jobs');
   };
 
   const handleFoundJobFinish = () => {
     closeCancelFlow();
-    AnalyticsService.trackAction('found_job_finish_clicked');
+    console.log('Found job finish clicked');
     console.log('Finish clicked');
   };
 
   const handleSupportContact = () => {
-    AnalyticsService.trackAction('support_contact_clicked');
     console.log('Support contact clicked');
   };
 
   const handleUpdateCard = () => {
-    AnalyticsService.trackAction('update_card_clicked');
     console.log('Update card clicked');
   };
 
   const handleInvoiceHistory = () => {
-    AnalyticsService.trackAction('invoice_history_clicked');
     console.log('Invoice history clicked');
   };
 
   const handleSettingsToggle = () => {
     setShowAdvancedSettings(!showAdvancedSettings);
-    AnalyticsService.trackAction('settings_toggled', { showAdvancedSettings: !showAdvancedSettings });
     console.log('Settings toggled:', !showAdvancedSettings);
   };
 
@@ -410,6 +440,7 @@ export function useCancelFlow() {
     handleFoundJobComplete,
     handleDownsellAccept,
     handleDownsellDecline,
+    handleDownsellBack,
     handleRolesContinue,
     handleReasonNext,
     handleReasonBack,

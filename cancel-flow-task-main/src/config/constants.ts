@@ -3,6 +3,22 @@
 export const AB_TESTING_CONFIG = {
   DEFAULT_DISTRIBUTION: 0.5, // 50% chance for each bucket
   FORCE_DOWNSELL: false, // Toggle while testing A/B: force showing downsell on "Not yet"
+  VARIANTS: {
+    A: {
+      prices: {
+        25: 12.5, // 50% off
+        50: 25,   // 50% off
+        100: 50,  // 50% off
+      }
+    },
+    B: {
+      prices: {
+        25: 15,   // $10 off
+        50: 40,   // $10 off
+        100: 90,  // $10 off
+      }
+    }
+  }
 } as const;
 
 export const MODAL_CONFIG = {

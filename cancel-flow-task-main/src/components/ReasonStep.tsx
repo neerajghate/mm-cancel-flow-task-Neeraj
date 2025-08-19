@@ -7,7 +7,6 @@ type ReasonStepProps = {
   onBack: () => void;
   onNext: (payload: { appsApplied: string; companiesEmailed: string; companiesInterviewed: string }) => void;
   onClose?: () => void;
-  sawDownsell?: boolean; // Whether user saw the downsell step (affects step counting)
 };
 
 const Q1 = ['0', '1 – 5', '6 – 20', '20+'];
@@ -17,8 +16,7 @@ const Q3 = ['0', '1–2', '3–5', '5+'];
 export default function ReasonStep({
   onBack,
   onNext,
-  onClose,
-  sawDownsell = false
+  onClose
 }: ReasonStepProps) {
   const [appsApplied, setAppsApplied] = useState('');
   const [companiesEmailed, setCompaniesEmailed] = useState('');
@@ -59,47 +57,61 @@ export default function ReasonStep({
 
   return (
     <div className="modal-panel">
-      {/* Header */}
-      <ModalHeader onClose={onClose}>
-        {/* Back (left) */}
-        <button
-          onClick={onBack}
-          className="back-link"
-        >
-          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Back
-        </button>
+             {/* Header: responsive layout - mobile: title+progress left, desktop: original layout */}
+       <ModalHeader onClose={onClose}>
+         <div className="flex items-center w-full">
+           {/* Mobile: title and progress stacked on left */}
+           <div className="flex flex-col gap-2 sm:hidden">
+             <div className="section-title text-left">Subscription Cancellation</div>
+             <div className="flex items-center gap-2">
+               <div className="flex gap-1">
+                 <div className="w-4 h-1.5 bg-green-500 rounded-full"></div>
+                 <div className="w-4 h-1.5 bg-green-500 rounded-full"></div>
+                 <div className="w-4 h-1.5 bg-gray-300 rounded-full"></div>
+               </div>
+               <div className="text-xs text-gray-600">Step 2 of 3</div>
+             </div>
+           </div>
 
-        {/* Center: title + progress + step text */}
-        <div className="flex items-center gap-3">
-          <div className="section-title">Subscription Cancellation</div>
-          <div className="flex items-center gap-2">
-            <span className="step-text">
-              {sawDownsell ? 'Step 3 of 4' : 'Step 2 of 3'}
-            </span>
-            <div className="flex gap-1">
-              {sawDownsell ? (
-                // 4 steps: Initial -> Downsell -> Reason -> Final Reason -> Done
-                <>
-                  <div className="progress-pill--step"></div>
-                  <div className="progress-pill--step"></div>
-                  <div className="progress-pill--step"></div>
-                  <div className="progress-pill--step--inactive"></div>
-                </>
-              ) : (
-                // 3 steps: Initial -> Reason -> Final Reason -> Done
-                <>
-                  <div className="progress-pill--step"></div>
-                  <div className="progress-pill--step"></div>
-                  <div className="progress-pill--step--inactive"></div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </ModalHeader>
+           {/* Desktop: original layout with back button in header */}
+           <div className="hidden sm:flex items-center w-full">
+             <button
+               onClick={onBack}
+               className="back-link flex items-center gap-2"
+             >
+               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+               </svg>
+               Back
+             </button>
+
+             <div className="flex items-center gap-3 mx-auto">
+               <div className="section-title">Subscription Cancellation</div>
+               <div className="flex items-center gap-2">
+                 <span className="step-text">Step 2 of 3</span>
+                 <div className="flex gap-1">
+                   <div className="progress-pill--step"></div>
+                   <div className="progress-pill--step"></div>
+                   <div className="progress-pill--step--inactive"></div>
+                 </div>
+               </div>
+             </div>
+           </div>
+         </div>
+       </ModalHeader>
+
+       {/* Mobile: Back button below header */}
+       <div className="sm:hidden px-6 py-3 border-b border-gray-100">
+         <button
+           onClick={onBack}
+           className="back-link flex items-center gap-2"
+         >
+           <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+           </svg>
+           <span className="text-sm font-medium">Back</span>
+         </button>
+       </div>
 
       {/* Body */}
       <ModalBody>
@@ -108,7 +120,7 @@ export default function ReasonStep({
           <div className="sm:pr-4">
             <h1 className="heading-1 mb-3 sm:mb-4">
               Help us understand how you
-              <br className="hidden sm:block" /> were using Migrate Mate.
+              <br className="hidden sm-block" /> were using Migrate Mate.
             </h1>
 
             <div className="space-y-3 sm:space-y-4">
@@ -122,7 +134,8 @@ export default function ReasonStep({
                     options={Q1}
                     value={appsApplied}
                     onChange={setAppsApplied}
-                    columns={2}
+                    columns={4}
+                    className={invalidQ1 ? 'pill--error' : ''}
                   />
                 </FormField>
               </div>
@@ -137,7 +150,8 @@ export default function ReasonStep({
                     options={Q2}
                     value={companiesEmailed}
                     onChange={setCompaniesEmailed}
-                    columns={2}
+                    columns={4}
+                    className={invalidQ2 ? 'pill--error' : ''}
                   />
                 </FormField>
               </div>
@@ -152,7 +166,8 @@ export default function ReasonStep({
                     options={Q3}
                     value={companiesInterviewed}
                     onChange={setCompaniesInterviewed}
-                    columns={2}
+                    columns={4}
+                    className={invalidQ3 ? 'pill--error' : ''}
                   />
                 </FormField>
               </div>
@@ -186,8 +201,8 @@ export default function ReasonStep({
             </div>
           </div>
 
-          {/* Right: image */}
-          <div className="image-container">
+          {/* Right: image - Desktop only */}
+          <div className="hidden sm:block image-container">
             <img
               src="/nyc.jpg"
               alt="NYC skyline"
