@@ -24,7 +24,6 @@ A Next.js application demonstrating a secure, persistent database implementation
 1. **Clone the repository**
    ```bash
    git clone https://github.com/neerajghate/mm-cancel-flow-task-Neeraj.git
-   cd cancel-flow-task-main
    ```
 
 2. **Install dependencies**
